@@ -1,8 +1,8 @@
 # Changelog
 
-## GitHub Pages release preparation · 2026-11-12
+## GitHub Pages first publication · 2026-11-12
 
-Added artifact-based deployment, a checksum-pinned HGA Release asset, stable full-story/NFC entrances, public URL copy behavior and publication browser checks. Generated data remain outside source Git.
+Added artifact-based deployment, a checksum-pinned HGA Release asset, stable full-story/NFC entrances, public URL copy behavior and publication browser checks. Generated data remain outside source Git. Published fixed full-story and NFC/HGA URLs; verified the live site.
 
 ## 0.2.0 · 2026-11-12
 
