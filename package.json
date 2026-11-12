@@ -2,13 +2,14 @@
   "name": "lexical-access-site",
   "version": "0.2.0",
   "private": true,
-  "description": "Mobile poster companion with a local real HGA visualization pilot",
+  "description": "Mobile final-poster companion with independent activation and contrast explorers",
   "scripts": {
     "serve": "python3 -m http.server 4173 --bind 127.0.0.1",
     "test": "node tests/browser.cjs",
-    "test:real": "node tests/real-browser.cjs",
-    "test:pages": "node tests/pages-browser.cjs",
-    "test:surface": "node tests/surface-browser.cjs"
+    "test:real": "node tests/poster-browser.cjs",
+    "test:pages": "node tests/poster-browser.cjs",
+    "test:surface": "node tests/poster-browser.cjs",
+    "test:poster": "node tests/poster-browser.cjs"
   },
   "devDependencies": {
     "playwright": "1.65.0"

@@ -4,7 +4,8 @@ Publication of the current real HGA pilot was explicitly requested on 12 Novembe
 
 - Full story: https://gilles-jhqian.github.io/lexical-access/
 - Poster-session/NFC entrance: https://gilles-jhqian.github.io/lexical-access/hga/
-- Compatible direct section link: https://gilles-jhqian.github.io/lexical-access/#hga
+- Activation: https://gilles-jhqian.github.io/lexical-access/#hga
+- Contrast: https://gilles-jhqian.github.io/lexical-access/#contrast
 
 Keep the repository name and these entrances stable across releases. Updating content at the same URL does not require rewriting NFC tags. Write the HTTPS URL as the tag's web-address record; the `/hga/` entrance redirects to the explorer in the same document. Current-view links can still include selected controls and time, but general NFC cards should use the stable entrances above.
 
@@ -22,7 +23,7 @@ The build uses only Python's standard library. No pipeline, subject data, scient
 python3 scripts/build_public_site.py --bundle /path/to/reviewed/real-data.js --output /path/to/empty/site
 ```
 
-The data bundle must match `deployment.json`. To run public-build browser checks, set `SITE_PAGES_ROOT` to that result (default `<output>/meta/site`), then run `SITE_PAGES_OUTPUT=<output> npm run test:pages`. To inspect the deployed site use `SITE_PAGES_URL=https://gilles-jhqian.github.io/lexical-access/` as well. Screenshots/reports use sibling `figs`/`meta` directories outside Git.
+The data bundle must match `deployment.json`. To run public-build browser checks, set `SITE_POSTER_ROOT` to that result (default `<output>/meta/public-site`), then run `SITE_POSTER_OUTPUT=<output> npm run test:pages`. To inspect the deployed site use `SITE_POSTER_URL=https://gilles-jhqian.github.io/lexical-access/` as well. Screenshots/reports use sibling `figs`/`meta` directories outside Git.
 
 Full source numerical validation is retained from the real pilot. Publication checks focus on correct artifact contents, stable copied URLs, real-mode loading, NFC redirects, mobile layout and public resource availability. Physical iOS/Android behavior is for the user's phone check.
 
@@ -33,7 +34,7 @@ Full source numerical validation is retained from the real pilot. Publication ch
 3. Enable GitHub Pages with workflow publishing; run `Publish real HGA pilot` from `master`.
 4. Wait for a successful run, confirm the actual Pages URL, and run public browser/HTTP checks before giving the user NFC-ready links.
 
-The current pilot intentionally retains the draft's reserved decoding figure, author and final poster PDF slots. Contours remain dynamic display-level sets, not new time-resolved significance tests.
+The public narrative follows the final November PPTX, with authors and references included and placeholder figures removed. Activation and contrast are independent chapters. Old `#hga?metric=contrast` links remain compatible. Contours remain dynamic display-level sets, not new time-resolved significance tests.
 
 ## Verified first publication
 
