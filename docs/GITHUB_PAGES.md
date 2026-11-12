@@ -43,4 +43,4 @@ Workflow run: https://github.com/Gilles-JHQian/lexical-access/actions/runs/43248
 Manual publication remains the only trigger. Future pushes do not automatically replace the live website; run the workflow only when that update is authorized.
 
 
-Current HD revision: data tag `hga-surface-hd-v3-2026-11-12`, 12-file artifact. `developer_tools` in `deployment.json` controls the temporary floating launcher; set false for final presentation and republish. `?dev=1` can explicitly reopen it. Runtime script/CSS/data URLs use content-hash queries while root/NFC entrances remain unchanged. See HD_SURFACES.md for appearance controls, field preservation and first-load size.
+Current mobile revision: restored data tag `hga-surface-v2-2026-11-12` with the current contour renderer, 12-file artifact. `developer_tools` in `deployment.json` controls the temporary floating launcher; set false for final presentation and republish. `?dev=1` can explicitly reopen it. Runtime script/CSS/data URLs use content-hash queries while root/NFC entrances remain unchanged. See HD_SURFACES.md for appearance controls, field preservation and first-load size.

@@ -1,8 +1,8 @@
 {
   "repository": "Gilles-JHQian/lexical-access",
   "base_url": "https://gilles-jhqian.github.io/lexical-access/",
-  "data_release": "hga-surface-hd-v3-2026-11-12",
+  "data_release": "hga-surface-v2-2026-11-12",
   "data_asset": "real-data.js",
-  "data_sha256": "1cec14411b9fa756cca15fc8dc227982b972561490bfb654c9e46a639b3e8cc1",
+  "data_sha256": "371d3f980811ddc81d25be7280f299f0703786cf11b219afd018834f0cae7ee8",
   "developer_tools": true
 }
