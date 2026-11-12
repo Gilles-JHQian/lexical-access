@@ -26,6 +26,12 @@ def build(bundle, output):
         raise ValueError('Use an empty output directory; refusing to overwrite a deployment')
     output.mkdir(parents=True, exist_ok=True)
     html = real_html(ROOT)
+    html = html.replace('data-developer-tools="true"', 'data-developer-tools="' + str(config.get("developer_tools", False)).lower() + '"')
+    # Stable entrances, immutable asset identities: avoid mixing cached old/new code.
+    for name in ['styles.css', 'surface-view.js', 'real-app.js', 'real-data.js']:
+        asset = content if name == 'real-data.js' else (ROOT / name).read_bytes()
+        token = hashlib.sha256(asset).hexdigest()[:12]
+        html = html.replace('"./' + name + '"', '"./' + name + '?v=' + token + '"')
     html = html.replace('</head>', '<link rel="canonical" href="' + config['base_url'] + '">\n<script defer src="./site-config.js"></script>\n</head>')
     (output / 'index.html').write_text(html)
     for name in ['styles.css', 'real-app.js', 'surface-view.js', '.nojekyll']:

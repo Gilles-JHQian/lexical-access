@@ -9,7 +9,8 @@
     "test:real": "node tests/poster-browser.cjs",
     "test:pages": "node tests/poster-browser.cjs",
     "test:surface": "node tests/poster-browser.cjs",
-    "test:poster": "node tests/poster-browser.cjs"
+    "test:poster": "node tests/poster-browser.cjs",
+    "test:contours": "node tests/contour-parity.cjs"
   },
   "devDependencies": {
     "playwright": "1.65.0"

@@ -1,5 +1,9 @@
 # Changelog
 
+## HD contours and developer options · 2026-11-12
+
+Tripled the inflated display mesh; replaced shader contour bands with normal-lifted mesh isolines based on the viewer. Added bounded display smoothing, consistent antialiased line widths, a lighter cortex with retained curvature and pale task-color interiors. Moved view/overlap tweaks into a draggable, hideable developer panel with appearance controls and copied tuned views. Public asset URLs now carry content hashes while card entrances stay fixed.
+
 ## Final poster narrative and separate HGA chapters · 2026-11-12
 
 Aligned the public story, authors, methods and references with the final November PPTX. Split activation and contrast into independent interactive chapters, retaining synchronized task rotation within each. Removed prominent data/pilot badges and redundant technical fragments; interpretation details remain expandable. Existing NFC and saved-view links remain compatible. No scientific data or surface changes.
