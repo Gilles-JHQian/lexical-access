@@ -141,5 +141,5 @@ def export(args):
     print('EXPORT PASS',audit['bundle_bytes'],flush=True)
 
 if __name__=='__main__':
-    p=argparse.ArgumentParser();p.add_argument('--workspace',type=Path,required=True);p.add_argument('--viz',type=Path,required=True);p.add_argument('--recon',type=Path,required=True);p.add_argument('--output',type=Path,required=True);p.add_argument('--mesh-fraction',type=float,default=.24);p.add_argument('--roi-mapping',type=Path)
+    p=argparse.ArgumentParser();p.add_argument('--workspace',type=Path,required=True);p.add_argument('--viz',type=Path,required=True);p.add_argument('--recon',type=Path,required=True);p.add_argument('--output',type=Path,required=True);p.add_argument('--mesh-fraction',type=float,default=.08);p.add_argument('--roi-mapping',type=Path)
     export(p.parse_args())

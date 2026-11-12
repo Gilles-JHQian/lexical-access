@@ -1,5 +1,9 @@
 # Changelog
 
+## Mobile surface budget restored · 2026-11-12
+
+Restore the previous 8% native display mesh and immutable v2 data asset after slow-loading feedback: about 22,000 triangles per hemisphere, 7.4 MB gzip instead of 21.5 MB. Retain the current contour rendering, pale fills/cortex, synchronized rotation and developer panel. Restore exporter default to `.08`; stable Pages and NFC URLs are unchanged.
+
 ## HD contours and developer options · 2026-11-12
 
 Tripled the inflated display mesh; replaced shader contour bands with normal-lifted mesh isolines based on the viewer. Added bounded display smoothing, consistent antialiased line widths, a lighter cortex with retained curvature and pale task-color interiors. Moved view/overlap tweaks into a draggable, hideable developer panel with appearance controls and copied tuned views. Public asset URLs now carry content hashes while card entrances stay fixed.

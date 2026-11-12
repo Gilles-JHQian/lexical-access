@@ -1,6 +1,6 @@
 // Numerical cross-check against the existing viewer's independent isoline routine.
 const fs=require('node:fs'),vm=require('node:vm'),path=require('node:path'),assert=require('node:assert/strict');
-const output=path.resolve(process.env.SITE_POSTER_OUTPUT||path.join(__dirname,'../../lexical_access_site_preview/hd-contours-v5'));
+const output=path.resolve(process.env.SITE_POSTER_OUTPUT||path.join(__dirname,'../../lexical_access_site_preview/mobile-mesh-v6'));
 const reference=path.resolve(process.env.SITE_VIEWER_MATH||path.join(__dirname,'../../lexical_access/brain_viewer/viewer_react/src/preview/math.js'));
 const ctx=vm.createContext({window:{}});vm.runInContext(fs.readFileSync(path.join(__dirname,'../surface-view.js'),'utf8'),ctx);
 const implementation=ctx.window.LexicalSurfaceView.contourSegments;

@@ -2,7 +2,7 @@
 const {chromium}=require('playwright');
 const assert=require('node:assert/strict'),fs=require('node:fs/promises'),path=require('node:path'),http=require('node:http');
 const config=require('../deployment.json');
-const output=path.resolve(process.env.SITE_POSTER_OUTPUT||path.join(__dirname,'../../lexical_access_site_preview/hd-contours-v5'));
+const output=path.resolve(process.env.SITE_POSTER_OUTPUT||path.join(__dirname,'../../lexical_access_site_preview/mobile-mesh-v6'));
 const checks=[],errors=[]; const check=(name,value)=>{assert.ok(value,name);checks.push(name);};
 let browser,server;
 (async()=>{
@@ -58,7 +58,7 @@ let browser,server;
   await page.locator('.nav-explore').click();await page.waitForFunction(()=>document.querySelector('#hga').open);
  }
  await page.setViewportSize({width:390,height:844});await navigate('#hga');
- check('Activation has three dense WebGL maps',await canvases('activation').evaluateAll(cs=>cs.length===3&&cs.every(c=>c.dataset.renderer==='webgl'&&Number(c.dataset.faces)>60000)));
+ check('Activation has three WebGL maps at the restored LH face count',await canvases('activation').evaluateAll(cs=>cs.length===3&&cs.every(c=>c.dataset.renderer==='webgl'&&Number(c.dataset.faces)===21988)));
  check('Activation and contrast have separate timelines',await page.locator('[data-control=time]').count()===2&&await control('activation','direction').count()===0&&await control('contrast','direction').count()===1);
  const initial=await canvases('activation').first().evaluate(c=>c.toDataURL());
  await control('activation','time').fill('16');await control('activation','time').dispatchEvent('input');
@@ -74,6 +74,7 @@ let browser,server;
  await closeDev();await setView('activation','tasks');await control('activation','settings').locator('summary').click();
  await control('activation','alignment').selectOption('offset');check('Offset uses own time zero and native support',await control('activation','time-output').textContent()==='0 ms'&&await control('activation','time').getAttribute('max')==='16');
  await explorer('activation').locator('[data-hemi=rh]').click();check('Hemisphere and alignment preserve rotation',await synced('activation')&&(await camera('activation'))[0]===angle);
+ check('RH uses the restored face count',await canvases('activation').evaluateAll(cs=>cs.length===3&&cs.every(c=>Number(c.dataset.faces)===21384)));
  check('RH source counts remain correct',(await control('activation','counts-note').textContent()).includes('Repetition 221'));
  await control('activation','settings').locator('summary').click();await navigate('#contrast');
  check('Contrast starts with its own three maps and lateral camera',await synced('contrast')&&(await camera('contrast'))[0]==='0:0');
