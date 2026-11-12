@@ -1,6 +1,6 @@
 # GitHub Pages publication and NFC
 
-Publication of the current real HGA pilot was explicitly requested on 12 November 2026. Intended repository: `Gilles-JHQian/lexical-access`. The canonical addresses below are deployment targets; they become usable only after Pages succeeds.
+Publication of the current real HGA pilot was explicitly requested on 12 November 2026. Published repository: `Gilles-JHQian/lexical-access`. Deployment and live mobile-viewport/HTTP checks passed on 12 November 2026. The canonical addresses below are live.
 
 - Full story: https://gilles-jhqian.github.io/lexical-access/
 - Poster-session/NFC entrance: https://gilles-jhqian.github.io/lexical-access/hga/
@@ -34,3 +34,9 @@ Full source numerical validation is retained from the real pilot. Publication ch
 4. Wait for a successful run, confirm the actual Pages URL, and run public browser/HTTP checks before giving the user NFC-ready links.
 
 The current pilot intentionally retains the draft's reserved decoding figure, author and final poster PDF slots. Contours remain dynamic display-level sets, not new time-resolved significance tests.
+
+## Verified first publication
+
+Workflow run: https://github.com/Gilles-JHQian/lexical-access/actions/runs/43248285741 (success). Deployed commit: `57c916be76e9a10b0c4c8caf0a2189bba8892ed8`. Data release: https://github.com/Gilles-JHQian/lexical-access/releases/tag/hga-pilot-2026-11-12. HTTPS is enforced. Thirteen browser checks passed against the actual public site, and all nine public runtime resources matched the reviewed local artifact byte-for-byte. `.nojekyll` is a build marker, excluded from the public HTTP byte comparison. Validation records and screenshots are outside Git in `../lexical_access_site_preview/pages-v1/{figs,meta}`.
+
+Manual publication remains the only trigger. Future pushes do not automatically replace the live website; run the workflow only when that update is authorized.
