@@ -1,0 +1,36 @@
+name: Publish real HGA pilot
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: github-pages
+  cancel-in-progress: false
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/configure-pages@v5
+      - name: Download reviewed aggregate data release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python3 - <<'PYCODE'
+          import json, os, pathlib, subprocess
+          c = json.loads(pathlib.Path('deployment.json').read_text())
+          subprocess.run(['gh', 'release', 'download', c['data_release'], '--repo', c['repository'], '--pattern', c['data_asset'], '--dir', os.environ['RUNNER_TEMP'] + '/hga-data'], check=True)
+          PYCODE
+      - name: Build static site and verify data checksum
+        run: python3 scripts/build_public_site.py --bundle "$RUNNER_TEMP/hga-data/real-data.js" --output _site
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: _site
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4

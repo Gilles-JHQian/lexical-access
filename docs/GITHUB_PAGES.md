@@ -1,14 +1,36 @@
-# GitHub Pages handoff
+# GitHub Pages publication and NFC
 
-The generated real pilot is static and ready to serve from its meta/site directory. The source repository root is the synthetic fixture; publishing that root alone will not include the real pilot. Prepare the approved generated site as a deployment artifact when publication is requested. All assets use relative paths, so both a user site and `https://<owner>.github.io/<repository>/` work. Hash routes require no rewrite rule. `.nojekyll` disables Jekyll processing.
+Publication of the current real HGA pilot was explicitly requested on 12 November 2026. Intended repository: `Gilles-JHQian/lexical-access`. The canonical addresses below are deployment targets; they become usable only after Pages succeeds.
 
-No GitHub repository, remote, push, public publication, custom domain or QR card has been created in this task. The user requested an Avalon draft first.
+- Full story: https://gilles-jhqian.github.io/lexical-access/
+- Poster-session/NFC entrance: https://gilles-jhqian.github.io/lexical-access/hga/
+- Compatible direct section link: https://gilles-jhqian.github.io/lexical-access/#hga
 
-When publication is requested, create/select the repository, publish the approved generated site through a Pages artifact or deployment branch, with its index.html at the served root. Use the resulting literal base URL for the two cards:
+Keep the repository name and these entrances stable across releases. Updating content at the same URL does not require rewriting NFC tags. Write the HTTPS URL as the tag's web-address record; the `/hga/` entrance redirects to the explorer in the same document. Current-view links can still include selected controls and time, but general NFC cards should use the stable entrances above.
 
-- General card: `<base>/`
-- Poster-session card: `<base>/#hga`
+## Publication contract
 
-The current-view copy button can preserve a selected metric, comparison view, alignment, ROI, overlap scope hemisphere, direction selection and event-relative time. Never print a loopback/file URL onto cards. Finalize authors, poster PDF and synthetic-versus-real presentation before treating this as the final project page.
+Source code is pushed to the independent website repository. Generated `real-data.js` is uploaded as the GitHub Release asset named in `deployment.json`, with a pinned SHA-256. It is never committed to source Git. Source audits with local paths, figure caches and screenshots are not included in the published site.
 
-For local remote-host development, forward port 4173 using the SSH connection for this host, then open the forwarded URL on the same client. A loopback URL on the compute host is not a mobile/public preview. No long-running preview server is left behind by automated QA.
+`.github/workflows/pages.yml` uses a manual `workflow_dispatch` to download that immutable data release, verify the checksum and real-data schema, build an allowlisted static site, upload a Pages artifact and deploy it. The user-requested publication runs this workflow once; later code pushes alone do not publish. Enable Pages with `build_type=workflow` (Settings → Pages → Source → GitHub Actions).
+
+The build uses only Python's standard library. No pipeline, subject data, scientific environment or raw recordings are needed on GitHub Actions. It copies ten public runtime files, including `/hga/index.html` and a small `version.json`, and rejects local storage paths. All ordinary assets remain relative for project subpaths. The root source `index.html` is a synthetic development fixture; only the generated Pages artifact is the real public website.
+
+## Local build and validation
+
+```bash
+python3 scripts/build_public_site.py --bundle /path/to/reviewed/real-data.js --output /path/to/empty/site
+```
+
+The data bundle must match `deployment.json`. To run public-build browser checks, put the result at `<output>/meta/site`, then run `SITE_PAGES_OUTPUT=<output> npm run test:pages`. To inspect the deployed site use `SITE_PAGES_URL=https://gilles-jhqian.github.io/lexical-access/` as well. Screenshots/reports use sibling `figs`/`meta` directories outside Git.
+
+Full source numerical validation is retained from the real pilot. Publication checks focus on correct artifact contents, stable copied URLs, real-mode loading, NFC redirects, mobile layout and public resource availability. Physical iOS/Android behavior is for the user's phone check.
+
+## Release sequence
+
+1. Create the public website repository under the verified GitHub account; push validated `master` via SSH.
+2. Create the data release in `deployment.json` and upload the accepted `real-data.js` attachment. Do not replace it with different bytes under the same tag; a new bundle requires a new release and checksum.
+3. Enable GitHub Pages with workflow publishing; run `Publish real HGA pilot` from `master`.
+4. Wait for a successful run, confirm the actual Pages URL, and run public browser/HTTP checks before giving the user NFC-ready links.
+
+The current pilot intentionally retains the draft's reserved decoding figure, author and final poster PDF slots. Contours remain dynamic display-level sets, not new time-resolved significance tests.
