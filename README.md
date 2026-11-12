@@ -1,19 +1,19 @@
 # Lexical access · interactive poster companion
 
-Standalone Avalon website draft for GitHub Pages. Open `index.html` directly or run `npm run serve` and browse `http://127.0.0.1:4173` on the same machine. There is no build step and no production dependency.
+Standalone Avalon website for GitHub Pages. The current **real HGA pilot** is generated at:
 
-- Full story: `/`
-- Poster-session entrance: `/#hga`
-- Saved illustration: `/#hga?metric=contrast&view=contours&scope=active&align=offset&roi=frontal&t=850`
+`/hpc/home/jq81/cogan_lab/jq81/avalon/lexical_access_site_preview/real-hga-v1/meta/interactive-preview-real.html`
 
-The English narrative follows the 5 November 2026 poster draft. Every map and curve in the interactive explorer is synthetic; the brain is an authored schematic. No actual neural data or subject identifiers are included. The actual decoding figure, author details and final poster PDF are reserved for a later pass.
+Open that self-contained file in a browser. The equivalent static site is in `real-hga-v1/meta/site/`. Its full-story entry is `/`; the poster-session entry is `/#hga`. A precise saved view also captures hemisphere, contrast selection, alignment and event-relative time. No public site or remote is configured.
 
-Read [the Chinese outline](docs/OUTLINE.zh-CN.md), [architecture and data boundary](ARCHITECTURE.md), [development record](docs/DEVELOPMENT.md) and [GitHub Pages handoff](docs/GITHUB_PAGES.md).
+This pilot uses existing bipolar HGA activation and signed Nonword − Word HGA-z summaries. It includes three-task maps, dynamic contour overlays, onset/offset alignment, both lateral hemispheres and descriptive ROI curves. The English narrative follows the 5 November poster draft. Decoding figures, author details and the final poster PDF remain reserved.
+
+The repository contains presentation code and export/validation scripts. Its root `index.html` deliberately remains the original **synthetic** development fixture, available with `npm run serve`. Real data and anatomy are generated outside Git. See [real-pilot scope and reproduction](docs/REAL_DATA_PILOT.md), [Chinese outline](docs/OUTLINE.zh-CN.md), [architecture](ARCHITECTURE.md), [development record](docs/DEVELOPMENT.md) and [Pages handoff](docs/GITHUB_PAGES.md).
 
 ## Validation
 
-Install development-only Playwright with `npm install`, then `npx playwright install chromium` and `npm test`. By default, screenshots and JSON reports go into `../lexical_access_site_preview/{figs,meta}`. Set `SITE_QA_OUTPUT` to change that destination. The test starts an ephemeral loopback server and stops it afterward. Never commit generated previews or scientific results.
+Install development-only Playwright with `npm install`, then `npx playwright install chromium`. `npm test` checks the synthetic fixture; `npm run test:real` checks the generated real site. The latter defaults to `../lexical_access_site_preview/real-hga-v1`; set `SITE_REAL_OUTPUT` for another delivery folder. Both run ephemeral loopback servers and write artifacts outside this repository. Numerical validation uses the existing scientific Python environment; commands are in the pilot guide.
 
 ## Workspace and Git
 
-This repository is `/hpc/home/jq81/cogan_lab/jq81/avalon/lexical_access_site`, a sibling of the analysis workspace. Integration branch is `master`; task branch is `feat/mobile-poster-framework`. No remote is configured and nothing is published. Deploy only after a GitHub repository and public data/content are approved for this purpose.
+Source: `/hpc/home/jq81/cogan_lab/jq81/avalon/lexical_access_site`, separate from the analysis workspace. Integration branch: `master`; real-pilot topic: `feat/real-hga-pilot`. Reusable scientific kernels remain in the owning visualization workspace. No raw recordings, per-contact browser arrays, subject identifiers or generated neural results are committed.

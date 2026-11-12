@@ -22,12 +22,29 @@ The illustration uses a 600ms stimulus duration solely to translate the same moc
 - Other chapter hashes open the relevant details before scrolling. Unknown values fall back to defaults. t is clamped to supported time.
 - Copy this view serializes the current state. The two card buttons copy the plain root and #hga. Clipboard failure offers a selectable address dialog. No QR code is generated until a final public domain is selected.
 
-## Future real-data boundary
+## Real-data boundary
 
-Replace the provider with small, explicitly approved, public aggregate summaries and an approved surface asset. Keep compute-heavy preprocessing, significance, smoothing, anatomy registration and model fitting in their owning BIDS/core workspaces. No raw recordings, electrode identifiers, trial arrays, fitted models, production logs or large derivatives in this repository or Avalon cache.
+The user authorized the local real-data pilot on 12 November 2026. Publication remains a separate action. Real deliverables contain compact aggregate summaries and template anatomy. Keep compute-heavy preprocessing, significance, smoothing, anatomy registration and model fitting in their owning BIDS/core workspaces. No raw recordings, electrode identifiers, trial arrays, fitted models, production logs or large derivatives in this repository or Avalon cache.
 
 A real adapter must supply units, actual time support, alignment-specific summaries (do not infer offset by shifting a constant duration), hemisphere/view geometry, sign conventions, task coverage, missingness, true statistical masks, overlap definition, reference/baseline, source version and provenance. Do not merely rename synthetic labels: real-data integration also changes maps, units, annotations, overlap interpretation and validation. Keep the synthetic provider for UI tests.
 
 ## Preview artifacts
 
 Sibling ../lexical_access_site_preview/figs/ holds screenshots; ../lexical_access_site_preview/meta/ holds QA reports/manifests. No generated result is committed. This new repository needs no worktree while its checkout is clean and exclusive; future parallel worktrees belong to ../lexical_access_site.worktrees/<topic>.
+
+
+## Real pilot implementation (schema 2)
+
+`index.html`, `mock-data.js` and `app.js` remain the synthetic fixture. `scripts/package_real_preview.py` generates a separate real HTML document using `real-data.js`, `surface-view.js` and `real-app.js`. It validates the bundle hash, replaces synthetic labels and also creates a self-contained HTML file. There is no runtime external request or silent mock fallback.
+
+`export_real_pilot.py` composes existing poster cache summaries through the shared `plotters.surface_field.compute_surface_field` API. Six cells cover activation onset/offset and contrast onset/offset × Nw>W/W>Nw selection. The bundle provides real frame times, fixed selections, counts, units, color/contour scales, compact fields, supports, ROI curves and decimated template geometry. Private source paths and hashes are in a separate audit. No contact identifiers, individual time courses, trial arrays or subject geometry reach the browser.
+
+Both surfaces retain exact white-to-inflated vertex correspondence after display-mesh decimation. Full-resolution scientific fields are sampled at retained vertices, quantized to signed int16, and interpolated by WebGL for display. WebGL uses depth occlusion and smooth curvature/normal shading; Canvas2D is a coarse fallback when WebGL is absent. Mode/hemisphere changes release old contexts. Maps use one selected hemisphere; descriptive curves always pool both hemispheres.
+
+Activation retains the source legacy kernel (7 mm bandwidth, 20 mm reach), ±5.1 scale and ±2.04 contour level. Contrast uses the tissue kernel (7 mm, 15 mm), ±1 scale and ±0.15 level. These are unnormalized weighted surface sums, not ROI means or significance scores. Contrast is always Nonword − Word in ΔHGA z, including the W>Nw selected set. Static poster d′ curves are not relabeled as HGA z. The static poster's envelope closing/island operations are not applied to moving contours.
+
+Shared hatching requires same-sign suprathreshold fields and support for all requested tasks (all three or two active tasks). It is spatial overlap, not an electrode-set intersection or statistical conjunction. Task selections are fixed in the displayed source window; moving fields introduce no new framewise significance test. ROI definitions come from `coarse_roi_mapping_v2.json` and are display groups, not the decoding ROI definition. Empty groups remain missing.
+
+Real onset and offset use separate source arrays. Frame times are native samples every 62.5 ms, with onset −250…1250 ms and offset −250…750 ms. Playback at 1× advances 62.5 ms per 62.5 ms of elapsed time; reduced motion never autoplays. Switching alignment resets to that event's zero. For real saved hashes, `t` is milliseconds relative to the selected event; `direction=nwwd|wdnw` and `hemi=lh|rh` are additional parameters. This intentionally differs from the synthetic fixture's absolute mock-time contract.
+
+Generated pilot artifacts live at `../lexical_access_site_preview/real-hga-v1/{figs,meta}`. The real bundle is approximately 3.5 MB. `tests/validate_real_bundle.py` independently recomputes curves/membership/counts and representative surface values; `tests/real-browser.cjs` covers responsive layouts and real interactions. See the pilot guide for source paths and reproducible commands.

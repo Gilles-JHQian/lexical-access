@@ -199,3 +199,11 @@ dialog { width:min(520px,90vw); border:1px solid var(--line); border-radius:6px;
 .explorer-context b { font-size:8px; font-weight:400; color:#76552a; margin-left:12px; letter-spacing:.4px; }
 .explorer-context a { font-size:10px; letter-spacing:0; min-height:32px; display:flex; align-items:center; }
 @media (max-width:620px) { .explorer-context { padding:5px 12px; font-size:8px; }.explorer-context b { font-size:7px; margin-left:7px; }.time-ticks[data-align="onset"] .zero-tick { display:none; } }
+/* Real-data pilot: a compact local atlas and measured source summaries. */
+.brain-panel canvas,.contour-stage canvas,.hero-brain canvas { width:100%; height:auto; display:block; }
+.contour-stage canvas { max-height:320px; object-fit:contain; }
+.real-options { display:flex; gap:18px; align-items:center; flex-wrap:wrap; padding:8px 24px; border-bottom:1px solid var(--line); font-size:11px; }
+.real-options .view-controls { gap:12px; }.real-options button { min-width:44px; }.real-options label { display:flex; align-items:center; gap:7px; }.source-line { color:var(--muted); margin-left:auto; font-size:10px; }
+.real-badge { color:#285d46; background:#edf5ef; border-color:#bdd8c6; }
+.real-trace-caption { color:var(--muted); font-size:10px; margin:0 0 10px; text-align:center; }
+@media(max-width:620px){.real-options{padding:4px 12px;gap:8px;}.real-options .source-line{width:100%;margin-left:0;font-size:9px;}.brain-panel canvas{height:115px;object-fit:contain;}.contour-stage canvas{height:210px;}.real-trace-caption{font-size:9px;}.trace-header >span{font-size:7px;}.roi-controls{flex-wrap:wrap;}.roi-controls button{font-size:9px;padding:6px 8px;}}
