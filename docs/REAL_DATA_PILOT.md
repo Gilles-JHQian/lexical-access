@@ -54,3 +54,10 @@ SITE_REAL_OUTPUT="$site_output" npm run test:real
 18 个 task/cell 的真实时间、筛选、左右半球计数、四组曲线、缺失与 support 检查通过；6 个独立曲面抽查通过量化误差界限；36 项真实页面浏览器检查通过。宽度覆盖 320–1440 px，包括章节全展开、键盘/播放/拖动、事件切换、方向/半球、contour、保存视图、子路径和独立文件。
 
 检查环境为 Chromium 软件 GPU；尚未在实体 iOS Safari / Android 设备上测试。尚未发布 GitHub Pages。数据包约 3.5 MB，只有聚合曲面、曲线和模板网格，不包含被试标识、逐电极数组或原始记录。截图在 `figs/`，报告在 `meta/`。
+
+
+## Surface / rotation revision
+
+The first export and its source validation remain archived as `real-hga-v1`. The current surface bundle is `surface-v2` (23.5 MB raw, 7.4 MB gzip), using 8% native triangles with native normals and exact retained vertex coordinates. The data export command is unchanged except for `--output .../surface-v2`. Package with `scripts/package_real_preview.py --output .../surface-v2`.
+
+Run `tests/validate_surface_upgrade.py --baseline .../real-hga-v1 --output .../surface-v2 --viz <shared-viz> --recon <template-root>` in the scientific Python environment. This independently checks unchanged scientific summaries and fields at all old retained vertices, plus native normal provenance. Run `SITE_SURFACE_OUTPUT=.../surface-v2 npm run test:surface` for the local public build in `meta/public-site`, or add `SITE_SURFACE_URL=https://gilles-jhqian.github.io/lexical-access/` to test the published revision. The root and `/hga/` card URLs remain stable; optional saved-view `yaw`/`pitch` preserve rotation.

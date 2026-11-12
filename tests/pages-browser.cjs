@@ -13,7 +13,7 @@ let browser,server;
   await fs.mkdir(path.join(output,'meta'),{recursive:true});
   let base=process.env.SITE_PAGES_URL;
   if(!base){
-    const root=path.join(output,'meta/site');
+    const root=process.env.SITE_PAGES_ROOT||path.join(output,'meta/site');
     server=http.createServer(async(req,res)=>{
       let relative=new URL(req.url,'http://localhost').pathname.replace(/^\/lexical-access\//,'');
       if(!relative||relative.endsWith('/'))relative+='index.html';

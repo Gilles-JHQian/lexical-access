@@ -1,5 +1,9 @@
 # Changelog
 
+## Interactive brain surfaces · 2026-11-12
+
+Increased display mesh density about 6.7×, corrected normal orientation, and softened only the anatomical curvature backdrop. Added synchronized mouse/touch rotation for all three tasks and the contour view, lateral reset, keyboard controls and shareable camera angles. Preserved source selections, HGA curves and field values at common vertices within their quantization precision. Fixed phone/NFC URLs remain unchanged.
+
 ## GitHub Pages first publication · 2026-11-12
 
 Added artifact-based deployment, a checksum-pinned HGA Release asset, stable full-story/NFC entrances, public URL copy behavior and publication browser checks. Generated data remain outside source Git. Published fixed full-story and NFC/HGA URLs; verified the live site.
