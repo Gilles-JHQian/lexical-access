@@ -26,10 +26,6 @@ def build(bundle, output):
         raise ValueError('Use an empty output directory; refusing to overwrite a deployment')
     output.mkdir(parents=True, exist_ok=True)
     html = real_html(ROOT)
-    import re
-    html = re.sub(r'<title>.*?</title>', '<title>Lexical access in motion · HGA pilot</title>', html)
-    html = html.replace('Both links are ready for separate QR cards once a public GitHub Pages address is available.', 'Use these two stable links for separate NFC or QR cards. Future page updates keep the same addresses.')
-    html = html.replace('LEXICAL ACCESS · PROTOTYPE 01', 'LEXICAL ACCESS · HGA PILOT')
     html = html.replace('</head>', '<link rel="canonical" href="' + config['base_url'] + '">\n<script defer src="./site-config.js"></script>\n</head>')
     (output / 'index.html').write_text(html)
     for name in ['styles.css', 'real-app.js', 'surface-view.js', '.nojekyll']:
