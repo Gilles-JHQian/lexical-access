@@ -48,3 +48,8 @@ Shared hatching requires same-sign suprathreshold fields and support for all req
 Real onset and offset use separate source arrays. Frame times are native samples every 62.5 ms, with onset −250…1250 ms and offset −250…750 ms. Playback at 1× advances 62.5 ms per 62.5 ms of elapsed time; reduced motion never autoplays. Switching alignment resets to that event's zero. For real saved hashes, `t` is milliseconds relative to the selected event; `direction=nwwd|wdnw` and `hemi=lh|rh` are additional parameters. This intentionally differs from the synthetic fixture's absolute mock-time contract.
 
 Generated pilot artifacts live at `../lexical_access_site_preview/real-hga-v1/{figs,meta}`. The real bundle is approximately 3.5 MB. `tests/validate_real_bundle.py` independently recomputes curves/membership/counts and representative surface values; `tests/real-browser.cjs` covers responsive layouts and real interactions. See the pilot guide for source paths and reproducible commands.
+
+
+## GitHub Pages and fixed NFC entrances
+
+`deployment.json` pins the public base URL and a checksum-verified data Release asset. Generated data stay outside Git. The manual Pages workflow downloads this asset, runs `scripts/build_public_site.py`, and deploys only its allowlisted output. `scripts/site_template.py` is shared with local preview packaging so real-mode HTML does not drift. A public `site-config.js` sets the canonical base for copy buttons; local previews without it keep their existing URL behavior. `/hga/` is a stable, JavaScript-independent redirect to `/#hga`. Keep both entry URLs unchanged across content updates. A public `version.json` exposes only data-version provenance; source audits and local paths stay out of the artifact.

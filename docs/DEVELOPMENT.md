@@ -56,3 +56,16 @@ Validation: all 18 source task/cells and four ROI groups each, source hashes, na
 Reproduction commands and source details are in REAL_DATA_PILOT.md. Final source/merge hashes and artifact checksums are recorded outside Git in the delivery manifest and Linear. Nothing pushed or published; full-story placeholder decoding figure and poster PDF remain outside this HGA pilot's scope.
 
 Final regression: the 53 synthetic browser assertions also pass. JavaScript/Python syntax, generated static real-data labels and git diff whitespace checks pass. Final real browser run passes all 36 checks after correcting nominal 1× playback to real elapsed time.
+
+
+## 2026-11-12 · GitHub Pages / NFC publication
+
+User explicitly requested pushing this version to GitHub and obtaining a stable phone/NFC URL. Topic: feat/github-pages-publication, independent site checkout; no pipeline changes. GitHub connector confirms account Gilles-JHQian and no existing website repository. SSH authentication is available. Connector lacks repo-creation, Release upload and Pages configuration; host initially had no gh CLI/login. Installed checksum-verified official gh v2.103.3 in /tmp/lexical-site-gh and initiated browser device login in an isolated temporary config directory. Authentication is the pending user action, not a new publication approval request.
+
+Prepared repository target Gilles-JHQian/lexical-access, canonical root and /hga/ redirect. A separately uploaded Release holds the previously validated 3.5 MB aggregate data; deployment.json pins its hash. Manual GitHub Actions downloads the asset and builds ten allowlisted runtime files. It excludes local audits/paths and keeps generated data out of code Git. Existing synthetic source template remains a development fixture. Shared real HTML packaging and site-config ensure preview/public consistency and canonical copy links. GitHub official custom-workflow documentation was checked for configure-pages v5, upload-pages-artifact v4, deploy-pages v4 and checkout v6.
+
+Publication validation and final deployment state are recorded below when completed; planned URLs must not be described as live before the deployment is verified.
+
+GitHub browser login completed and verified Gilles-JHQian. Created public repository https://github.com/Gilles-JHQian/lexical-access and attached origin via SSH. Initial browser run found the temporary Playwright package missing on this host; reinstalled the pinned test-only package under /tmp. The next run timed out because the test attempted sharing while its chapter was collapsed; corrected the test to open References/sharing through the actual summary control. Public copy now describes the available stable NFC/QR entrances.
+
+Publication build validation passed: 10 allowlisted files, pinned data SHA, no local-storage paths; deliberately corrupt bundle rejected. Thirteen Pages browser checks pass (320/390/430px, real mode, canonical URL, /hga/ redirect, contour/playback, both copied public addresses, data version, no runtime/asset errors). Fixed the final screenshot test to use the actual repeated-navigation button instead of expecting a hashchange from navigating to an already-current hash. Prior scientific and full real-explorer checks remain applicable because neural values and surface calculations did not change.
