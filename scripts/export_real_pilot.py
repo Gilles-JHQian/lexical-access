@@ -20,7 +20,7 @@ def export(args):
     (out/'figs').mkdir(parents=True, exist_ok=True); (out/'meta').mkdir(exist_ok=True)
     sys.path.insert(0, str(args.viz))
     from plotters.surface_field import compute_surface_field
-    from plotters.surface_geom import _get_surface_cache, curvature_rgb
+    from plotters.surface_geom import _get_surface_cache, _get_surface_normals, curvature_rgb
     from plotters.density_config import DensityKernel
     from plotters.brain_config import default_cortex
     import pyvista as pv
@@ -46,15 +46,18 @@ def export(args):
     for hemi in ['lh','rh']:
         entry=_get_surface_cache(str(args.recon),'avg35','inflated',hemi)
         faces=entry['faces']; mesh=pv.PolyData(entry['verts'],np.column_stack((np.full(len(faces),3),faces)).ravel())
-        reduced=mesh.decimate_pro(.988,preserve_topology=True)
+        reduced=mesh.decimate_pro(.92,preserve_topology=True)
+        # Native-resolution area-weighted normals preserve the sulcal shape after display decimation.
+        full_normals=_get_surface_normals(entry)
+        assert np.isfinite(full_normals).all()
         distance,ids=cKDTree(entry['verts']).query(reduced.points)
         assert distance.max()<1e-4, 'Decimation moved vertices; cannot silently change white mapping'
         smallfaces=reduced.faces.reshape(-1,4)[:,1:]
         colors=curvature_rgb(str(args.recon),default_cortex('inflated'),'avg35',hemi)[ids]
         points=entry['verts'][ids]
         mesh_ids[hemi]=ids
-        data['geometries'][hemi]=dict(positions=packed(points,'<f4'),faces=packed(smallfaces,'<u2'),colors=packed(np.round(colors*255),'|u1'))
-        audit['geometry'][hemi]=dict(full_vertices=len(entry['verts']),vertices=len(ids),faces=len(smallfaces),max_vertex_displacement=float(distance.max()),white_vertex_ids_sha256=hashlib.sha256(ids.tobytes()).hexdigest())
+        data['geometries'][hemi]=dict(positions=packed(points,'<f4'),faces=packed(smallfaces,'<u2'),normals=packed(full_normals[ids],'<f4'),colors=packed(np.round(colors*255),'|u1'))
+        audit['geometry'][hemi]=dict(normal_source='full-resolution inflated surface',retained_fraction=.08,full_vertices=len(entry['verts']),vertices=len(ids),faces=len(smallfaces),max_vertex_displacement=float(distance.max()),white_vertex_ids_sha256=hashlib.sha256(ids.tobytes()).hexdigest())
         for path,*_ in entry['source_signature']:snapshots[str(path)]=sha(path)
         print('geometry',hemi,len(ids),len(smallfaces),flush=True)
     mapping_path=args.viz.parent/'final_figures/lexical_access/scripts/coarse_roi_mapping_v2.json'

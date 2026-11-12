@@ -207,3 +207,11 @@ dialog { width:min(520px,90vw); border:1px solid var(--line); border-radius:6px;
 .real-badge { color:#285d46; background:#edf5ef; border-color:#bdd8c6; }
 .real-trace-caption { color:var(--muted); font-size:10px; margin:0 0 10px; text-align:center; }
 @media(max-width:620px){.real-options{padding:4px 12px;gap:8px;}.real-options .source-line{width:100%;margin-left:0;font-size:9px;}.brain-panel canvas{height:115px;object-fit:contain;}.contour-stage canvas{height:210px;}.real-trace-caption{font-size:9px;}.trace-header >span{font-size:7px;}.roi-controls{flex-wrap:wrap;}.roi-controls button{font-size:9px;padding:6px 8px;}}
+
+/* Touch dragging is limited to the maps; the surrounding page remains scrollable. */
+#brain-stage canvas { touch-action:pinch-zoom; cursor:grab; user-select:none; -webkit-user-select:none; -webkit-touch-callout:none; border-radius:4px; }
+#brain-stage canvas.is-dragging { cursor:grabbing; }
+#brain-stage canvas:focus-visible { outline:2px solid #2369bd; outline-offset:2px; }
+.rotation-controls { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:0 24px 5px; color:var(--muted); font-size:10px; }
+.rotation-controls button { background:none; border:0; color:var(--navy); cursor:pointer; min-height:44px; padding:8px 0 8px 14px; font:inherit; white-space:nowrap; }
+@media(max-width:620px){.rotation-controls{padding:0 12px;font-size:9px;gap:6px;}.rotation-controls button{min-height:40px;}}
