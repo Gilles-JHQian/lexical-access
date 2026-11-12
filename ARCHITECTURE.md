@@ -2,7 +2,7 @@
 
 Buildless HTML/CSS/JavaScript, served from repository root. No production dependencies, CDN, analytics, data fetch or backend. Relative asset URLs support GitHub Pages project subpaths and opening index.html from disk.
 
-- index.html owns the entire readable poster story, native details/summary chapters and controls. Narrative exists before JavaScript runs.
+- poster.html owns the public, final-PPTX narrative. scripts/site_template.py inserts activation and contrast controls. index.html remains the original synthetic fixture. Both stories exist before JavaScript runs.
 - styles.css owns mobile-first interaction behavior and responsive layouts. Three maps stack vertically below 620px so all tasks remain available without a carousel. Controls have native keyboard behavior; animation starts only after a click.
 - mock-data.js exposes LexicalData: kind, version, tasks, regions, timeline, displayThreshold, fields(taskId, absoluteTimeMs, metric), signal(taskId, roi, absoluteTimeMs, metric), provenance.
 - app.js owns state, the schematic SVG maps, contour intersections, traces, playback, hash navigation and sharing. Curves rebuild on mode/ROI changes; frame rendering updates maps/cursor at at most 30 fps.
@@ -14,7 +14,7 @@ Activation is a synthetic positive response above a notional baseline. Contrast 
 
 The illustration uses a 600ms stimulus duration solely to translate the same mock frame between onset and offset alignment. Absolute time stays unchanged when changing alignment. No UP anchor, ablation, sample count or measured peak time is introduced. The signed contrast curve can cross zero; baseline is explicit.
 
-## URL contract
+## Original synthetic fixture URL contract
 
 - / or /index.html: full-story entry.
 - #hga: opens chapter 03 and scrolls straight to the explorer controls and visible simulated-data label; starts paused.
@@ -35,7 +35,7 @@ Sibling ../lexical_access_site_preview/figs/ holds screenshots; ../lexical_acces
 
 ## Real pilot implementation (schema 2)
 
-`index.html`, `mock-data.js` and `app.js` remain the synthetic fixture. `scripts/package_real_preview.py` generates a separate real HTML document using `real-data.js`, `surface-view.js` and `real-app.js`. It validates the bundle hash, replaces synthetic labels and also creates a self-contained HTML file. There is no runtime external request or silent mock fallback.
+`index.html`, `mock-data.js` and `app.js` remain the synthetic fixture. `scripts/package_real_preview.py` generates a separate real HTML document using `real-data.js`, `surface-view.js` and `real-app.js`. It validates the bundle hash, composes poster.html with two explorers, and also creates a self-contained HTML file. There is no runtime external request or silent mock fallback.
 
 `export_real_pilot.py` composes existing poster cache summaries through the shared `plotters.surface_field.compute_surface_field` API. Six cells cover activation onset/offset and contrast onset/offset × Nw>W/W>Nw selection. The bundle provides real frame times, fixed selections, counts, units, color/contour scales, compact fields, supports, ROI curves and decimated template geometry. Private source paths and hashes are in a separate audit. No contact identifiers, individual time courses, trial arrays or subject geometry reach the browser.
 
@@ -47,7 +47,7 @@ Shared hatching requires same-sign suprathreshold fields and support for all req
 
 Real onset and offset use separate source arrays. Frame times are native samples every 62.5 ms, with onset −250…1250 ms and offset −250…750 ms. Playback at 1× advances 62.5 ms per 62.5 ms of elapsed time; reduced motion never autoplays. Switching alignment resets to that event's zero. For real saved hashes, `t` is milliseconds relative to the selected event; `direction=nwwd|wdnw` and `hemi=lh|rh` are additional parameters. This intentionally differs from the synthetic fixture's absolute mock-time contract.
 
-Generated pilot artifacts live at `../lexical_access_site_preview/real-hga-v1/{figs,meta}`. The first real bundle was approximately 3.5 MB; the denser surface revision below supersedes it. `tests/validate_real_bundle.py` independently recomputes curves/membership/counts and representative surface values; `tests/real-browser.cjs` covers responsive layouts and real interactions. See the pilot guide for source paths and reproducible commands.
+Generated pilot artifacts live at `../lexical_access_site_preview/real-hga-v1/{figs,meta}`. The first real bundle was approximately 3.5 MB; the denser surface revision below supersedes it. `tests/validate_real_bundle.py` independently recomputes curves/membership/counts and representative surface values; `tests/poster-browser.cjs` now covers responsive layouts and real interactions. See the pilot guide for source paths and reproducible commands.
 
 
 ## GitHub Pages and fixed NFC entrances
@@ -63,7 +63,7 @@ One yaw/pitch camera belongs to the explorer, shared by all three tasks and the 
 
 WebGL receives camera-only uniform updates during rotation, keeps neural buffers until the frame/cell changes, caches geometry across tasks, and caps resolution to the visible canvas and device pixel ratio (at most 2). Canvas2D also rotates, with approximate per-triangle coloring. The new aggregate bundle is 23,537,686 bytes (7,393,036 bytes with gzip), trading initial download size for a less faceted mobile surface. Physical iOS/Android performance remains unmeasured.
 
-`tests/surface-browser.cjs` checks pointer/touch/keyboard synchronization, view persistence, native page scrolling, saved angles, reset and Canvas2D fallback. `tests/validate_surface_upgrade.py` compares every old retained vertex across all 36 task/cell/hemisphere combinations, unchanged curves/counts/thresholds/times/selection, and full-resolution normal provenance. Generated data and reports: `../lexical_access_site_preview/surface-v2/{figs,meta}`. The new immutable data Release is `hga-surface-v2-2026-11-12`; canonical URLs and manual-only deployment remain unchanged.
+The original surface-browser suite (now consolidated in `tests/poster-browser.cjs`) checks pointer/touch/keyboard synchronization, view persistence, native page scrolling, saved angles, reset and Canvas2D fallback. `tests/validate_surface_upgrade.py` compares every old retained vertex across all 36 task/cell/hemisphere combinations, unchanged curves/counts/thresholds/times/selection, and full-resolution normal provenance. Generated data and reports: `../lexical_access_site_preview/surface-v2/{figs,meta}`. The new immutable data Release is `hga-surface-v2-2026-11-12`; canonical URLs and manual-only deployment remain unchanged.
 
 
 ## Mobile readability and original branding
@@ -73,3 +73,14 @@ The header uses the same Cogan Lab and Duke Biomedical Engineering original PNGs
 Mobile body copy is 16px; primary controls are 14–16px, selects 16px, and key map labels/notes 12–14px. Relevant touch controls retain at least 44px height. On phones, native `#map-settings` details holds alignment, hemisphere, direction and fixed-selection metadata; its summary displays the current state and starts collapsed. Desktop exposes the same controls. Responsive resizing switches the disclosure default; within a viewport users control it themselves. The main signal, comparison view, camera and playback controls remain visible. Time is shown in the sticky transport, without a duplicate mobile label above the maps.
 
 Real trace axis values are HTML labels next to the plot, sized in CSS pixels instead of distorted by the SVG viewBox. Curves and cursor retain the same coordinate mapping. `PUBLIC_ASSETS` in `scripts/site_template.py` defines the explicit image allowlist shared by Pages and local packaging. Standalone previews embed the PNGs. Pages now has twelve public build files; PNGs are copied as binary and textual assets still pass the private-path scan. There is no new data Release or numerical export in this presentation revision.
+
+
+## Final poster narrative and independent explorers · 2026-11-12
+
+The public source is now `poster.html`, based on the final November PPTX identified in `docs/POSTER_SOURCE.md`. Six chapters follow question → experiment → activation → contrast → cross-task decoding → discussion. The earlier November 5 three-component story and placeholder figures are retired from the public site. Authors, affiliations, methods and references follow the PPTX. Prominent pilot/real/bipolar badges are removed at the user's request; necessary signal definitions, fixed-selection limitations, denominators and overlap interpretation remain in collapsed notes. The synthetic fixture stays visibly synthetic.
+
+`real-app.js` creates one scoped controller for each `[data-explorer]`. Activation and contrast each own their timeline, alignment, ROI, hemisphere, camera, playback and saved state. All three task maps within one explorer share its camera. Moving between chapters preserves their settings; starting either player pauses the other. Leaving the viewport, hiding the document or collapsing its chapter pauses a player. Offscreen WebGL contexts are released and reconstructed on return; the hero snapshots one frame and releases its context. The existing dense surface renderer and all scientific bundle bytes are unchanged.
+
+The public URL contract is `/` for the full story, `/hga/` and `#hga` for activation, and `#contrast` for contrast. Saved links use the corresponding anchor plus view/align/direction/hemi/scope/roi/t/yaw/pitch. `t` remains relative to the selected event. Old `#hga?metric=contrast` links restore into the contrast chapter; `#components` redirects to that chapter and `#activation` aliases `#hga`. Native disclosure navigation reopens a chapter even when the hash is unchanged. No autoplay.
+
+The consolidated `tests/poster-browser.cjs` replaces the three old singleton-explorer suites. It checks both controllers, native samples, sign preservation, camera synchronization/isolation, mouse/touch/keyboard, framebuffer changes, fallback, responsive layout, static narrative, old/new links, NFC and standalone packaging. `npm test` still tests the untouched mock fixture. Artifacts live in `../lexical_access_site_preview/poster-story-v4/{figs,meta}`.

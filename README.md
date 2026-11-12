@@ -1,19 +1,15 @@
 # Lexical access · interactive poster companion
 
-Standalone Avalon website for GitHub Pages. The current **real HGA pilot** is generated at:
+Mobile poster companion, published at [full story](https://gilles-jhqian.github.io/lexical-access/) · [activation / NFC](https://gilles-jhqian.github.io/lexical-access/hga/) · [contrast](https://gilles-jhqian.github.io/lexical-access/#contrast). The root and NFC addresses stay stable. Publication uses the existing manual Pages workflow.
 
-`/hpc/home/jq81/cogan_lab/jq81/avalon/lexical_access_site_preview/real-hga-v1/meta/interactive-preview-real.html`
+The public narrative in `poster.html` follows the final November PPTX: question → experiment → HGA activation → HGA contrast → cross-task decoding → discussion. Activation and contrast have separate interactive chapters and saved state. Each supports three task maps with synchronized rotation, contour overlays, onset/offset alignment, hemispheres and descriptive ROI curves. Method/interpretation notes are expandable. See [source authority](docs/POSTER_SOURCE.md).
 
-Open that self-contained file in a browser. The equivalent static site is in `real-hga-v1/meta/site/`. Its full-story entry is `/`; the poster-session entry is `/#hga`. A precise saved view also captures hemisphere, contrast selection, alignment and event-relative time. Published website: [full story](https://gilles-jhqian.github.io/lexical-access/) · [NFC / HGA entrance](https://gilles-jhqian.github.io/lexical-access/hga/). These addresses stay stable across content updates. Deployment uses the manual Pages workflow; see the Pages handoff.
-
-This pilot uses existing bipolar HGA activation and signed Nonword − Word HGA-z summaries. It includes three-task maps, dynamic contour overlays, onset/offset alignment, both lateral hemispheres and descriptive ROI curves. The English narrative follows the 5 November poster draft. Decoding figures, author details and the final poster PDF remain reserved.
-
-The repository contains presentation code and export/validation scripts. Its root `index.html` deliberately remains the original **synthetic** development fixture, available with `npm run serve`. Real data and anatomy are generated outside Git. See [real-pilot scope and reproduction](docs/REAL_DATA_PILOT.md), [Chinese outline](docs/OUTLINE.zh-CN.md), [architecture](ARCHITECTURE.md), [development record](docs/DEVELOPMENT.md) and [Pages handoff](docs/GITHUB_PAGES.md).
+This standalone Avalon repository owns presentation code. Root `index.html`, `app.js` and `mock-data.js` remain the original synthetic development fixture (`npm run serve`). Generated real data, browser previews and reports are outside Git in sibling `lexical_access_site_preview/poster-story-v4/{figs,meta}`. Open `meta/interactive-preview-real.html` for the standalone preview, or serve `meta/public-site/` for the Pages artifact. The verified aggregate bundle is the unchanged checksum-pinned GitHub Release; there are no raw recordings, subject identifiers or individual-electrode browser arrays.
 
 ## Validation
 
-Install development-only Playwright with `npm install`, then `npx playwright install chromium`. `npm test` checks the synthetic fixture; `npm run test:real` checks the generated real site; `npm run test:pages` verifies the public build and stable NFC links. The latter defaults to `../lexical_access_site_preview/real-hga-v1`; set `SITE_REAL_OUTPUT` for another delivery folder. Both run ephemeral loopback servers and write artifacts outside this repository. Numerical validation uses the existing scientific Python environment; commands are in the pilot guide.
+Install development-only Playwright with `npm install`, then `npx playwright install chromium`. `npm test` checks the synthetic fixture. `npm run test:poster` (also `test:real`, `test:pages`, `test:surface`) checks the public two-explorer experience. Set `SITE_POSTER_OUTPUT` to a delivery folder, `SITE_POSTER_ROOT` to a build directory, or `SITE_POSTER_URL` to an existing deployment. Tests use ephemeral servers and save screenshots/reports outside Git. See [architecture](ARCHITECTURE.md), [development record](docs/DEVELOPMENT.md), [Pages build](docs/GITHUB_PAGES.md), [scientific export](docs/REAL_DATA_PILOT.md) and [Chinese outline](docs/OUTLINE.zh-CN.md).
 
-## Workspace and Git
+## Workspace
 
-Source: `/hpc/home/jq81/cogan_lab/jq81/avalon/lexical_access_site`, separate from the analysis workspace. Integration branch: `master`; real-pilot topic: `feat/real-hga-pilot`. Reusable scientific kernels remain in the owning visualization workspace. No raw recordings, per-contact browser arrays, subject identifiers or generated neural results are committed.
+Source: `/hpc/group/coganlab/jq81/avalon/lexical_access_site`, separate from the analysis pipeline. Integration branch: `master`. Generated summaries are delivery artifacts; reusable scientific kernels and bulk production outputs stay in their owning workspaces.

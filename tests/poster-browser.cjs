@@ -1,0 +1,135 @@
+// One end-to-end suite for the published poster and both independent explorers.
+const {chromium}=require('playwright');
+const assert=require('node:assert/strict'),fs=require('node:fs/promises'),path=require('node:path'),http=require('node:http');
+const config=require('../deployment.json');
+const output=path.resolve(process.env.SITE_POSTER_OUTPUT||path.join(__dirname,'../../lexical_access_site_preview/poster-story-v4'));
+const checks=[],errors=[]; const check=(name,value)=>{assert.ok(value,name);checks.push(name);};
+let browser,server;
+(async()=>{
+ await fs.mkdir(path.join(output,'figs'),{recursive:true});await fs.mkdir(path.join(output,'meta'),{recursive:true});
+ let base=process.env.SITE_POSTER_URL;
+ if(!base){
+  const root=process.env.SITE_POSTER_ROOT||path.join(output,'meta/public-site');
+  const allowed=['index.html','real-app.js','surface-view.js','styles.css','real-data.js','site-config.js','version.json','assets/favicon.svg','assets/cogan-lab.png','assets/duke-bme.png','hga/index.html'];
+  server=http.createServer(async(req,res)=>{
+   let file=new URL(req.url,'http://localhost').pathname.replace(/^\/lexical-access\//,'');if(!file||file.endsWith('/'))file+='index.html';
+   if(!allowed.includes(file)){res.writeHead(404).end();return;}
+   try{const types={'.js':'text/javascript','.css':'text/css','.json':'application/json','.png':'image/png','.svg':'image/svg+xml','.html':'text/html'};res.setHeader('Content-Type',types[path.extname(file)]);res.end(await fs.readFile(path.join(root,file)));}catch{res.writeHead(404).end();}
+  });
+  await new Promise(r=>server.listen(0,'127.0.0.1',r));base=`http://127.0.0.1:${server.address().port}/lexical-access/`;
+ }
+ const prefix=process.env.SITE_POSTER_URL?'published-':'';
+ browser=await chromium.launch({args:['--enable-unsafe-swiftshader']});
+ const context=await browser.newContext({viewport:{width:390,height:844},hasTouch:true,reducedMotion:'reduce'});
+ const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));page.on('response',r=>{if(r.status()>=400)errors.push(r.url()+': '+r.status());});
+ const explorer=m=>page.locator(`[data-explorer=${m}]`),control=(m,n)=>explorer(m).locator(`[data-control="${n}"]`),canvases=m=>control(m,'brain-stage').locator('canvas');
+ const navigate=async hash=>{
+  await page.evaluate(h=>{if(location.hash===h)window.dispatchEvent(new HashChangeEvent('hashchange'));else location.hash=h;},hash);
+  const m=hash.startsWith('#contrast')||hash.includes('metric=contrast')||hash==='#components'?'contrast':'activation';
+  await page.waitForFunction(metric=>{const r=document.querySelector(`[data-explorer=${metric}]`);return r.getBoundingClientRect().top>=0&&r.getBoundingClientRect().top<100&&r.querySelector('canvas[data-camera]');},m);
+  return m;
+ };
+ const camera=async m=>canvases(m).evaluateAll(cs=>cs.map(c=>c.dataset.camera));
+ const synced=async m=>{const values=await camera(m);return values.length===3&&values.every(v=>v===values[0]);};
+ const waitAngle=async(m,angle)=>page.waitForFunction(({m,angle})=>[...document.querySelectorAll(`[data-explorer=${m}] [data-control="brain-stage"] canvas`)].every(c=>c.dataset.camera===angle),{m,angle});
+ const response=await page.goto(base);check('Story returns 200',response.status()===200);
+ await page.waitForSelector('#hero-brain img');
+ check('Title follows final poster',(await page.title()).startsWith('Neural Dynamics of Lexical Access Across Response Demands'));
+ check('Six narrative chapters follow poster order',await page.locator('.chapter').evaluateAll(cs=>cs.map(c=>c.id).join(',')==='question,design,hga,contrast,decoding,discussion,references'));
+ check('Source data remains real',await page.evaluate(()=>window.LexicalRealBundle.kind==='real'));
+ check('Original Cogan and Duke logos load',await page.locator('.header-brands img').evaluateAll(es=>es.length===2&&es.every(e=>e.complete&&e.naturalWidth>1000)));
+ check('No badge clutter or placeholder figures',await page.locator('.mock-badge,.real-badge,.prototype-note,.figure-slot,[data-metric]').count()===0);
+ check('Every ID is unique',await page.locator('[id]').evaluateAll(es=>new Set(es.map(e=>e.id)).size===es.length));
+ check('Scientific interpretation remains in collapsed notes',await page.locator('.display-notes').evaluateAll(es=>es.length===2&&es.every(e=>!e.open&&e.textContent.includes('not a statistical conjunction'))));
+ check('Both players start paused',await page.locator('[data-control=play]').evaluateAll(es=>es.length===2&&es.every(e=>e.getAttribute('aria-label')==='Play animation')));
+ check('Mobile settings start collapsed',await page.locator('.map-settings').evaluateAll(es=>es.every(e=>!e.open)));
+ await page.screenshot({path:path.join(output,'figs',prefix+'mobile-story.png')});
+ for(const width of [320,375,390,430,768,1440]){
+  await page.setViewportSize({width,height:900});await page.locator('#toggle-chapters').click();
+  check(`Expanded story fits ${width}px`,await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
+  if(width<620){
+   check(`Readable type at ${width}px`,await page.evaluate(()=>parseFloat(getComputedStyle(document.querySelector('.hero-intro')).fontSize)>=16&&parseFloat(getComputedStyle(document.querySelector('.brain-panel figcaption')).fontSize)>=14));
+   check(`44px visible player controls at ${width}px`,await page.locator('.explorer button,.explorer select').evaluateAll(es=>es.filter(e=>e.getClientRects().length).every(e=>e.getBoundingClientRect().height>=44)));
+  }
+  await page.locator('#toggle-chapters').click();check(`All chapters collapse at ${width}px`,await page.locator('.chapter[open]').count()===0);
+  await page.locator('.nav-explore').click();await page.waitForFunction(()=>document.querySelector('#hga').open);
+ }
+ await page.setViewportSize({width:390,height:844});await navigate('#hga');
+ check('Activation has three dense WebGL maps',await canvases('activation').evaluateAll(cs=>cs.length===3&&cs.every(c=>c.dataset.renderer==='webgl'&&Number(c.dataset.faces)>20000)));
+ check('Activation and contrast have separate timelines',await page.locator('[data-control=time]').count()===2&&await control('activation','direction').count()===0&&await control('contrast','direction').count()===1);
+ const initial=await canvases('activation').first().evaluate(c=>c.toDataURL());
+ await control('activation','time').fill('16');await control('activation','time').dispatchEvent('input');
+ check('Native measured frame changes surface',await canvases('activation').first().evaluate(c=>c.toDataURL())!==initial);
+ check('Native frame time is correct',await control('activation','time-output').textContent()==='+750 ms');
+ await control('activation','time').focus();await page.keyboard.press('ArrowLeft');check('Keyboard moves one native frame',await control('activation','time').inputValue()==='15');
+ await navigate('#hga');const box=await canvases('activation').first().boundingBox(),x=box.x+box.width/2,y=box.y+box.height/2;
+ await page.mouse.move(x,y);await page.mouse.down();await page.mouse.move(x+36,y+16,{steps:6});await page.mouse.up();await page.waitForTimeout(80);
+ check('Dragging synchronizes three activation maps',await synced('activation')&&(await camera('activation'))[0]!=='0:0');
+ const angle=(await camera('activation'))[0];
+ await explorer('activation').locator('[data-view=contours]').click();await page.waitForTimeout(100);check('Contour retains activation camera',(await camera('activation'))[0]===angle&&await canvases('activation').count()===1);
+ for(const scope of ['none','active','all']){await control('activation','scope').selectOption(scope);check('Overlap scope '+scope,await control('activation','scope').inputValue()===scope);}
+ await explorer('activation').locator('[data-view=tasks]').click();await control('activation','settings').locator('summary').click();
+ await control('activation','alignment').selectOption('offset');check('Offset uses own time zero and native support',await control('activation','time-output').textContent()==='0 ms'&&await control('activation','time').getAttribute('max')==='16');
+ await explorer('activation').locator('[data-hemi=rh]').click();check('Hemisphere and alignment preserve rotation',await synced('activation')&&(await camera('activation'))[0]===angle);
+ check('RH source counts remain correct',(await control('activation','counts-note').textContent()).includes('Repetition 221'));
+ await control('activation','settings').locator('summary').click();await navigate('#contrast');
+ check('Contrast starts with its own three maps and lateral camera',await synced('contrast')&&(await camera('contrast'))[0]==='0:0');
+ check('Contrast keeps independent onset support',await control('contrast','time').getAttribute('max')==='24'&&await control('contrast','alignment').inputValue()==='onset');
+ await control('contrast','settings').locator('summary').click();await control('contrast','direction').selectOption('wdnw');
+ check('Opposite effect selection retains PW minus W sign',(await explorer('contrast').locator('.real-trace-caption').textContent()).includes('Pseudoword − Word'));
+ await explorer('contrast').locator('[data-roi=ventral]').click();
+ check('Changing contrast ROI leaves activation ROI unchanged',await explorer('activation').locator('[data-roi=all]').getAttribute('aria-pressed')==='true');
+ await control('contrast','settings').locator('summary').click();await navigate('#hga');
+ check('Returning preserves activation settings and camera',await control('activation','alignment').inputValue()==='offset'&&(await camera('activation'))[0]===angle);
+ await control('activation','reset-view').click();await waitAngle('activation','0:0');
+ await canvases('activation').nth(1).focus();await page.keyboard.press('ArrowRight');await waitAngle('activation','5:0');check('Keyboard rotates all three task maps',await synced('activation'));
+ await page.keyboard.press('Home');await waitAngle('activation','0:0');
+ await navigate('#hga');const touchBox=await canvases('activation').first().boundingBox(),tx=touchBox.x+touchBox.width/2,ty=touchBox.y+touchBox.height/2,scrollBefore=await page.evaluate(()=>scrollY),cdp=await context.newCDPSession(page);
+ await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:tx,y:ty}]});await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:tx+32,y:ty+22}]});await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});await page.waitForTimeout(100);
+ check('Touch drag rotates all maps without scrolling',await synced('activation')&&(await camera('activation'))[0]!=='0:0'&&Math.abs(await page.evaluate(()=>scrollY)-scrollBefore)<2);
+ check('Pinch zoom remains enabled',await canvases('activation').first().evaluate(c=>getComputedStyle(c).touchAction.includes('pinch-zoom')));
+ await control('activation','reset').click();await control('activation','play').click();await page.waitForTimeout(220);
+ check('Activation plays native samples',Number(await control('activation','time').inputValue())>4);
+ await navigate('#contrast');check('Leaving activation pauses it',await control('activation','play').getAttribute('aria-label')==='Play animation');
+ await control('contrast','reset').click();await control('contrast','play').click();await page.waitForTimeout(180);
+ check('Contrast playback is independent',Number(await control('contrast','time').inputValue())>4&&await control('activation','time').getAttribute('max')==='16');
+ await page.locator('#contrast > summary').click();await page.waitForFunction(()=>document.querySelector('#contrast-explorer [data-control=play]').getAttribute('aria-label')==='Play animation');check('Collapsing contrast pauses it',await control('contrast','play').getAttribute('aria-label')==='Play animation');
+ await page.locator('.chapter-nav a[href="#contrast"]').click();await page.waitForFunction(()=>document.querySelector('#contrast').open);
+ check('Same-hash navigation reopens contrast',await page.locator('#contrast').getAttribute('open')!==null);
+ await navigate('#hga?metric=contrast&view=contours&align=offset&direction=wdnw&hemi=rh&roi=frontal&scope=active&t=250&yaw=35&pitch=-20');
+ check('Legacy saved contrast links open new contrast section',await control('contrast','alignment').inputValue()==='offset'&&await control('contrast','time-output').textContent()==='+250 ms'&&await canvases('contrast').count()===1&&(await camera('contrast'))[0]==='35:-20');
+ await page.evaluate(()=>Object.defineProperty(navigator,'clipboard',{value:undefined,configurable:true}));
+ await control('contrast','copy-view').click();const saved=new URL(await page.locator('#share-url').inputValue());
+ check('Contrast sharing uses new anchor and complete state',saved.href.startsWith(config.base_url+'#contrast?')&&saved.hash.includes('yaw=35.0')&&saved.hash.includes('roi=frontal'));
+ await page.getByRole('button',{name:'Done',exact:true}).click();await navigate('#hga');await control('activation','copy-view').click();
+ check('Activation sharing retains stable anchor',(await page.locator('#share-url').inputValue()).startsWith(config.base_url+'#hga?'));
+ await page.getByRole('button',{name:'Done',exact:true}).click();
+ await page.locator('#references > summary').click();
+ for(const [id,expected] of [['copy-story',config.base_url],['copy-session',config.base_url+'hga/']]){
+  await page.locator('#'+id).click();check(id+' keeps fixed address',await page.locator('#share-url').inputValue()===expected);await page.getByRole('button',{name:'Done',exact:true}).click();
+ }
+ await page.goto(base+'hga/');await page.waitForURL('**/#hga');await page.waitForSelector('#activation-explorer canvas[data-camera]').catch(async e=>{console.log(await page.evaluate(()=>({hash:location.hash,scrollY,errors:document.querySelectorAll('canvas[data-camera]').length,rect:document.querySelector('#activation-explorer')?.getBoundingClientRect().toJSON(),ready:document.readyState,open:document.querySelector('#hga')?.open})));console.log(errors);await page.screenshot({path:path.join(output,'figs','failure.png')});throw e;});
+ check('NFC entrance still opens activation',await control('activation','play').getAttribute('aria-label')==='Play animation'&&await synced('activation'));
+ check('Published data release unchanged',(await (await context.request.get(base+'version.json')).json()).data_sha256===config.data_sha256);
+ await page.screenshot({path:path.join(output,'figs',prefix+'mobile-activation.png')});
+ await navigate('#contrast');await page.screenshot({path:path.join(output,'figs',prefix+'mobile-contrast.png')});
+ await page.setViewportSize({width:1440,height:1050});await page.goto(base);await page.waitForSelector('#hero-brain img');await page.screenshot({path:path.join(output,'figs',prefix+'desktop-story.png')});
+ await navigate('#contrast?view=contours&yaw=25&pitch=-10&t=500');await page.screenshot({path:path.join(output,'figs',prefix+'desktop-contrast.png')});
+ const nojs=await browser.newContext({javaScriptEnabled:false,viewport:{width:390,height:844}}),staticPage=await nojs.newPage();await staticPage.goto(base);
+ check('Poster narrative is readable without JavaScript',await staticPage.locator('#question .lead').isVisible()&&(await staticPage.locator('#discussion blockquote').textContent()).includes('shared across output modalities'));
+ await nojs.close();
+ if(!process.env.SITE_POSTER_URL){
+  const fallback=await context.newPage();fallback.on('pageerror',e=>errors.push(e.message));
+  await fallback.addInitScript(()=>{const get=HTMLCanvasElement.prototype.getContext;HTMLCanvasElement.prototype.getContext=function(type,...args){return type==='webgl'?null:get.call(this,type,...args);};});
+  await fallback.goto(base+'#contrast');await fallback.waitForSelector('#contrast-explorer canvas[data-camera]');await fallback.locator('#contrast-explorer canvas').first().focus();await fallback.keyboard.press('ArrowRight');
+  await fallback.waitForFunction(()=>[...document.querySelectorAll('#contrast-explorer canvas')].every(c=>c.dataset.camera==='5:0'));
+  check('Canvas2D fallback supports synchronized rotation',await fallback.locator('#contrast-explorer canvas').evaluateAll(cs=>cs.length===3&&cs.every(c=>c.dataset.renderer==='canvas2d')));await fallback.close();
+  const standalone=await context.newPage();standalone.on('pageerror',e=>errors.push(e.message));const requests=[];standalone.on('request',r=>{if(r.url().startsWith('http'))requests.push(r.url());});
+  await standalone.goto('file://'+path.join(output,'meta/interactive-preview-real.html')+'#contrast');await standalone.waitForSelector('#contrast-explorer canvas[data-camera]');
+  check('Standalone preview includes both players and logos',await standalone.locator('[data-explorer]').count()===2&&await standalone.locator('.header-brands img').evaluateAll(es=>es.every(e=>e.complete&&e.naturalWidth>1000)));
+  check('Standalone preview makes no external requests',requests.length===0);await standalone.close();
+ }
+ check('No runtime or asset errors',errors.length===0);
+ await fs.writeFile(path.join(output,'meta',prefix+'poster-browser.json'),JSON.stringify({status:'passed',checks,errors,url:base,notes:['Chromium software GPU with real touch events. Physical phone performance remains user-side.']},null,2));
+ console.log(JSON.stringify({status:'passed',checks:checks.length,url:base}));
+})().catch(e=>{console.error(e);process.exitCode=1;}).finally(async()=>{if(browser)await browser.close();if(server)server.close();});

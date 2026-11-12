@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#102d49">
+  <meta name="description" content="Neural Dynamics of Lexical Access Across Response Demands. Explore shared and task-dependent responses during listening, lexical decision and repetition.">
+  <title>Neural Dynamics of Lexical Access Across Response Demands · Cogan Lab</title>
+  <link rel="icon" href="./assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./styles.css">
+  <script defer src="./real-data.js"></script>
+  <script defer src="./surface-view.js"></script>
+  <script defer src="./real-app.js"></script>
+</head>
+<body class="poster-site">
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-header">
+  <div class="header-brands">
+    <a class="wordmark" href="#top" aria-label="Cogan Lab, back to top"><span class="cogan-logo"><img src="./assets/cogan-lab.png" width="1533" height="274" alt="Cogan Lab" fetchpriority="high"></span></a>
+    <a class="department-mark" href="https://bme.duke.edu/" aria-label="Duke Biomedical Engineering"><img src="./assets/duke-bme.png" width="2560" height="349" alt="Duke Biomedical Engineering"></a>
+  </div>
+  <nav aria-label="Primary"><a href="#question">The story</a><a class="nav-explore" href="#hga">Explore HGA <span aria-hidden="true">↗</span></a></nav>
+</header>
+<main id="main">
+<section class="hero wrap" id="top">
+  <div class="hero-copy">
+    <h1>Neural dynamics of <em>lexical access.</em></h1>
+    <p class="hero-subtitle">Across response demands</p>
+    <p class="hero-intro">What does the brain share when we listen to a word, decide what it is, or say it aloud?</p>
+    <div class="hero-actions"><a class="button primary" href="#hga">Explore activation <span aria-hidden="true">↗</span></a><a class="text-link" href="#contrast">Explore contrast <span aria-hidden="true">↗</span></a></div>
+  </div>
+  <figure class="hero-visual"><div class="hero-brain" id="hero-brain"></div><figcaption>High-gamma activity during repetition.</figcaption></figure>
+</section>
+<div class="chapter-nav-wrap"><nav class="chapter-nav wrap" aria-label="Chapters"><a href="#question">Question</a><a href="#design">Experiment</a><a href="#hga">Activation</a><a href="#contrast">Contrast</a><a href="#decoding">Shared representations</a><a href="#discussion">Takeaway</a></nav></div>
+<div class="story wrap">
+  <div class="story-tools"><span>The poster story</span><button type="button" id="toggle-chapters">Expand all chapters +</button></div>
+  <details class="chapter" id="question" open>
+    <summary><span class="chapter-number">01</span><span class="chapter-heading"><span class="chapter-title">What is shared across response demands?</span></span><span class="expand-icon" aria-hidden="true"></span></summary>
+    <div class="chapter-body">
+      <div class="question-layout"><div><p class="lead">Lexical access connects the sounds we hear to words stored in our mental lexicon.</p><p>Previous imaging studies compared words with pronounceable pseudowords. They found stronger responses to pseudowords in superior temporal regions, and to words in ventral temporal and inferior prefrontal regions.<sup><a href="#references">1, 2</a></sup></p><p>But these differences also depend on attention and response demands. How much reflects shared lexical processing, and how much depends on what a task asks us to do?</p></div><aside class="question-aside"><p>Hold the spoken stimuli constant.<br>Change the response demands.</p><p>Compare the activity, the lexicality effects, and the information that transfers between tasks.</p></aside></div>
+    </div>
+  </details>
+  <details class="chapter" id="design">
+    <summary><span class="chapter-number">02</span><span class="chapter-heading"><span class="chapter-title">The same sounds. Three tasks.</span></span><span class="expand-icon" aria-hidden="true"></span></summary>
+    <div class="chapter-body">
+      <p class="lead">Twenty-two participants heard 80 spoken stimuli: 40 words and 40 pronounceable pseudowords.</p>
+      <div class="task-cards"><article class="task-card passive"><h3>Passive listening</h3><p>Listen without making a behavioral response.</p></article><article class="task-card decision"><h3>Lexical decision</h3><p>Indicate by button press whether the stimulus is a word.</p></article><article class="task-card repeat"><h3>Overt repetition</h3><p>Repeat the stimulus aloud.</p></article></div>
+      <p>Intracranial EEG lets us follow high-gamma activity (HGA) through time. We first identify task-related activation, then compare words and pseudowords within those activated networks. Finally, we test whether lexicality information generalizes from one task to another.</p>
+      <details class="reading-guide"><summary>Recording and analysis</summary><p>The poster reports 22 participants (10 female; mean age 32.4 years), 2,555 bipolar sEEG electrode pairs, and 1,596 pairs in cortical regions defined by the Destrieux atlas.<sup><a href="#references">3</a></sup></p><p>HGA (70–200 Hz) was extracted around stimulus onset, offset and response onset and z-scored against the 0.5-second pre-cue baseline. The interactive views below provide the available stimulus-onset and stimulus-offset summaries.</p></details>
+    </div>
+  </details>
+  <details class="chapter explorer-chapter" id="hga" open>
+    <summary><span class="chapter-number">03</span><span class="chapter-heading"><span class="chapter-title">HGA activation</span></span><span class="expand-icon" aria-hidden="true"></span></summary>
+    <div class="chapter-body">
+      <div class="result-intro"><h2>Shared auditory activation, followed by task-dependent recruitment.</h2><p>Significant HGA increases relative to baseline reveal auditory temporal recruitment across all three tasks. Active tasks recruit additional frontotemporal responses later in time.</p></div>
+      <!-- EXPLORER:activation -->
+      <p class="section-bridge">Where activity rises is the first step. Next, ask where that activity differs between words and pseudowords. <a href="#contrast">Explore HGA contrast ↓</a></p>
+    </div>
+  </details>
+  <details class="chapter explorer-chapter" id="contrast" open>
+    <summary><span class="chapter-number">04</span><span class="chapter-heading"><span class="chapter-title">HGA contrast</span></span><span class="expand-icon" aria-hidden="true"></span></summary>
+    <div class="chapter-body">
+      <div class="result-intro"><h2>Shared and task-dependent lexicality effects.</h2><p>Within the task-activated networks, we compare HGA between words and pseudowords and identify significant lexicality effects in either direction.</p></div>
+      <!-- EXPLORER:contrast -->
+      <p class="section-bridge">These contrasts suggest two levels of lexical processing: one present without a required response, and another recruited by response demands but shared across output modalities.</p>
+    </div>
+  </details>
+  <details class="chapter" id="decoding">
+    <summary><span class="chapter-number">05</span><span class="chapter-heading"><span class="chapter-title">Shared lexical representations across tasks</span></span><span class="expand-icon" aria-hidden="true"></span></summary>
+    <div class="chapter-body">
+      <p class="lead">Does a word–pseudoword distinction learned in one task carry over to another?</p>
+      <p>To test for shared lexical representations, we trained a linear classifier on HGA to distinguish words from pseudowords in one task, then tested it on the other tasks.</p>
+      <div class="decode-flow" aria-label="Train a word–pseudoword classifier in one task and test it in another"><div>Train in one task<strong>Word or pseudoword?</strong></div><span class="flow-arrow" aria-hidden="true">→</span><div>Test in another task<strong>Does the distinction transfer?</strong></div></div>
+      <p>The findings support two levels of shared lexical representations:</p>
+      <div class="representation-results"><article><h3>STG / STS</h3><p>Representations are present even when no behavioral response is required.</p></article><article><h3>Ventral temporal and prefrontal regions</h3><p>Representations are recruited by response demands but shared across button-press and spoken responses.</p></article></div>
+    </div>
+  </details>
+  <details class="chapter" id="discussion">
+    <summary><span class="chapter-number">06</span><span class="chapter-heading"><span class="chapter-title">A shared foundation. Additional recruitment.</span></span><span class="expand-icon" aria-hidden="true"></span></summary>
+    <div class="chapter-body">
+      <blockquote>Lexical processing includes a component present without behavioral output and additional components recruited by output demands yet shared across output modalities.</blockquote>
+      <div class="next-steps"><div><h3>When does each network unfold?</h3><p>Next, we will quantify activation onset, peak and duration relative to stimulus onset and offset.</p></div><div><h3>What explains the activity?</h3><p>Encoding models will test which acoustic, phonological and lexical–semantic features explain activity in each network.</p></div></div>
+    </div>
+  </details>
+  <details class="chapter" id="references">
+    <summary><span class="chapter-number">+</span><span class="chapter-heading"><span class="chapter-title">Poster, references & sharing</span></span><span class="expand-icon" aria-hidden="true"></span></summary>
+    <div class="chapter-body">
+      <p><strong>Neural Dynamics of Lexical Access Across Response Demands</strong></p>
+      <p class="poster-authors">Qian, J.<sup>1</sup>, Shi, N.<sup>2</sup>, Vestal, M.<sup>3,4,5</sup>, Grant, G. A.<sup>3</sup>, Zafar, M.<sup>2,4,5</sup>, Frauscher, B.<sup>1,2,4</sup>, Southwell, D. G.<sup>2,3,4,6</sup>, &amp; Cogan, G. B.<sup>1,2,3,4,7,*</sup></p>
+      <details class="reading-guide"><summary>Author affiliations</summary><p>Duke University, Durham, NC, USA: <sup>1</sup> Department of Biomedical Engineering; <sup>2</sup> Neurology; <sup>3</sup> Neurosurgery; <sup>4</sup> Duke Comprehensive Epilepsy Center; <sup>5</sup> Department of Pediatrics; <sup>6</sup> Neurobiology; <sup>7</sup> Center for Cognitive Neuroscience.</p></details>
+      <ol class="reference-list"><li>Davis MH, Gaskell MG. A complementary systems account of word learning: neural and behavioural evidence. <em>Philosophical Transactions of the Royal Society B.</em> 2009;364:3773–3800.</li><li>Nigri A, Catricalà E, Ferraro S, et al. The neural correlates of lexical processing in disorders of consciousness. <em>Brain Imaging and Behavior.</em> 2017;11:1526–1537.</li><li>Destrieux C, Fischl B, Dale AM, Halgren E. Automatic parcellation of human cortical gyri and sulci using standard anatomical nomenclature. <em>NeuroImage.</em> 2010;53(1):1–15.</li></ol>
+      <div class="share-grid"><div><h3>The full story</h3><p>Start with the question and follow the complete poster narrative.</p><button type="button" class="button secondary" id="copy-story">Copy story link</button></div><div><h3>Straight to the activity</h3><p>Open activation first, with a direct link onward to contrast.</p><button type="button" class="button secondary" id="copy-session">Copy HGA link</button></div></div>
+    </div>
+  </details>
+</div>
+<footer class="site-footer wrap"><div><strong>COGAN LAB</strong><p>Duke University</p></div><a href="https://www.coganlab.org/">Visit the lab ↗</a></footer>
+</main>
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+<dialog id="share-dialog"><form method="dialog"><h2>Your share link</h2><p>Copy this address to open the selected view.</p><label for="share-url">Link</label><input id="share-url" readonly><button class="button primary" value="close">Done</button></form></dialog>
+</body>
+</html>

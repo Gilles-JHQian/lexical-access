@@ -1,0 +1,9 @@
+# Public narrative source
+
+Authority: `sfn-poster-nov-ver5-affiliations.pptx` (11 November 2026), SHA-256 `78825191f0deec54f3df8c45f29a412dd3605a9005091db2b21bd2b3a181e84d`.
+
+This is the final author-affiliation revision of the user's reuploaded `sfn-poster-nov-ver4-reviewed.pptx`, SHA-256 `880fec589951edcce20f47140b0dc50c9404d8d601483571de3bc4699924037b`. The poster review's `affiliations-v5.json` verifies that all other package parts were byte-identical. Full source paths, hashes and extracted paragraphs are recorded outside source Git in `../lexical_access_site_preview/poster-story-v4/meta/poster-source.json`. The source PPTX and review outputs were read only.
+
+The public text follows the final title, introduction, experiment, activation finding, lexicality contrast finding, cross-task linear-classifier description, two-level interpretation, future directions, authors/affiliations and three references. It supersedes the November 5 draft's three discrete components. Study counts are transcribed from the supplied poster, not newly recomputed. No classifier results or timings were invented; its train/test graphic is explanatory HTML. The existing animations remain HGA z and signed PW−W ΔHGA z; the distinction from static poster d′ is retained in each contrast view's notes. Response-onset analysis is mentioned as poster methodology; available interactive alignments are explicitly onset and offset only.
+
+Public chapters: question, experiment, HGA activation, HGA contrast, shared lexical representations, discussion. Secondary methods, affiliation details, counts and display assumptions are native collapsible disclosures. The two independent players preserve three-task/contour choices, synchronized task rotation, keyboard/touch support and saved URLs. Root and `/hga/` remain stable for existing cards; contrast has its own `#contrast` link.

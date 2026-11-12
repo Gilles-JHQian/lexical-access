@@ -1,5 +1,9 @@
 # Changelog
 
+## Final poster narrative and separate HGA chapters · 2026-11-12
+
+Aligned the public story, authors, methods and references with the final November PPTX. Split activation and contrast into independent interactive chapters, retaining synchronized task rotation within each. Removed prominent data/pilot badges and redundant technical fragments; interpretation details remain expandable. Existing NFC and saved-view links remain compatible. No scientific data or surface changes.
+
 ## Mobile readability and lab branding · 2026-11-12
 
 Replaced the placeholder header with original Cogan Lab and Duke Biomedical Engineering logos from the NFC-card project. Enlarged mobile copy, map labels and controls; refined spacing and cards; made secondary map settings collapsible on phones. Trace-axis labels now retain their readable screen size. Font families and fixed public entrances are retained.
