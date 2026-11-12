@@ -433,3 +433,10 @@ dialog { width:min(520px,90vw); border:1px solid var(--line); border-radius:6px;
 @media(max-width:620px){.developer-toggle { bottom:150px; }.developer-panel { bottom:204px; max-height:calc(100dvh - 230px); }}
 
 .developer-actions { display:grid; grid-template-columns:1fr 1fr; }.developer-actions #developer-copy { grid-column:1/-1; }
+
+/* Keep the selected view visible while the next verified data block arrives. */
+.data-status{margin:0 16px 12px;padding:10px 14px;border-radius:8px;background:#eef3f4;color:#425b6d;font-size:14px;display:flex;gap:12px;align-items:center;justify-content:space-between}
+.data-status[hidden]{display:none}
+.brain-stage[aria-busy="true"] canvas{opacity:.35}
+
+.poster-site .hero-brain{aspect-ratio:680/430}

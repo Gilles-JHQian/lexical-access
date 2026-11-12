@@ -1,6 +1,6 @@
 # Architecture
 
-Buildless HTML/CSS/JavaScript, served from repository root. No production dependencies, CDN, analytics, data fetch or backend. Relative asset URLs support GitHub Pages project subpaths and opening index.html from disk.
+Buildless HTML/CSS/JavaScript, served from repository root. No production dependencies, CDN, analytics or backend. The real explorer fetches same-origin aggregate blocks as needed. Relative asset URLs support GitHub Pages project subpaths and opening index.html from disk.
 
 - poster.html owns the public, final-PPTX narrative. scripts/site_template.py inserts activation and contrast controls. index.html remains the original synthetic fixture. Both stories exist before JavaScript runs.
 - styles.css owns mobile-first interaction behavior and responsive layouts. Three maps stack vertically below 620px so all tasks remain available without a carousel. Controls have native keyboard behavior; animation starts only after a click.
@@ -100,3 +100,16 @@ Validation: numerical source/mesh checks, viewer isoline parity, bounded smoothi
 ## Mobile mesh rollback · 2026-11-12
 
 The user reported slow loading after the HD upgrade. Current publication restores the immutable 8% mesh bundle `hga-surface-v2-2026-11-12`: LH 21,988 / RH 21,384 triangles, 23,537,686 raw bytes / 7,393,036 gzip. This supersedes the HD data pin above and reduces compressed data transfer by about 66%. Export defaults return to `.08`; no export or scientific computation was rerun. The viewer-derived contour renderer, bounded smoothing, pale fills, light cortex, synchronized camera and floating developer panel are unchanged. Existing source validation for the identical v2 bytes remains applicable. Compatibility checks use the current renderer with that restored bundle. Stable root/NFC links, asset hash cache keys and manual-only publishing remain unchanged. Generated artifacts: `../lexical_access_site_preview/mobile-mesh-v6/{figs,meta}`.
+
+
+## Native 32 Hz and demand loading · 2026-11-12
+
+Current release `hga-native-32hz-v4-2026-11-12` retains the exact 8% geometry. Accepted source caches are 128 Hz; export now keeps every fourth native sample instead of every eighth. Intervals are 31.25 ms, with 49 onset frames and 33 offset frames. Old times/ROI curves match exactly, and old surface values match within the combined int16 quantization bounds. No temporal interpolation, playback speedup, selection changes or new statistics. Playback derives the interval from actual cell times and stays at 1× by default; hardware can drop frames when rendering exceeds the frame budget.
+
+The immutable schema-2 `real-data.js` Release asset is only a build input and offline-preview payload. `scripts/stream_assets.py` losslessly repacks it into a roughly 51 KB schema-3 manifest, two geometry assets, support/scale assets by cell/hemisphere, and eight-frame time blocks holding all three tasks. Each compressed binary asset has a padded JSON descriptor followed by aligned typed-array bytes, gzip compression, a content-hash filename, compressed SHA-256 and decoded-length check. Public output contains 99 allowlisted files; generated arrays never enter Git.
+
+`data-loader.js` fetches only the visible view’s geometry/support/time block, deduplicates in-flight resources, verifies bytes before decoding with native DecompressionStream, caches geometry/support and up to 12 decoded time windows, and prefetches at most two forward blocks during playback. A paused view does not fetch its entire timeline. Current Chrome/Firefox/Safari with DecompressionStream and secure-context Web Crypto are required for the online compressed view; offline standalone previews retain the embedded adapter. File opening is supported by the standalone artifact, not the HTTP streaming build.
+
+`real-app.js` gates rendering on verified data availability, ignores stale seek/view completions, pauses on failures and exposes Retry. Buffering holds the timeline at the last rendered frame, then resumes without skipping buffered time. Offscreen/collapsed explorers pause and release their GPU contexts. The hero requests one block only when visible; direct HGA/contrast entrances do not fetch an offscreen hero’s activation data. Typed arrays feed the existing renderer without changing contour semantics. Manifest/runtime hashes and block filenames prevent cached-version mixtures; manual Pages workflow and root/NFC entrances remain fixed.
+
+Validation covers all 86 chunk payloads, all 36 task/cell/hemisphere old/new field comparisons, independently recomputed sources, contour parity, asynchronous browser interactions and network boundaries. External artifact root: `../lexical_access_site_preview/lazy-hga-v7/{figs,meta}`. First paused HGA view requests three assets totaling 727,839 bytes, plus the small manifest/UI assets. The full set is 12,305,674 compressed bytes, but is never requested at startup.

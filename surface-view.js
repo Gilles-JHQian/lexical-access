@@ -3,6 +3,7 @@
   'use strict';
   const ASPECT=680/430;
   const decode=object=>{
+    if(object.array)return object.array;
     const bytes=Uint8Array.from(atob(object.data),c=>c.charCodeAt(0));
     const Type={'<f4':Float32Array,'<u2':Uint16Array,'<i2':Int16Array,'|u1':Uint8Array}[object.dtype];
     return new Type(bytes.buffer);

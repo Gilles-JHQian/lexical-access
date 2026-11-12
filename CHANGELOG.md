@@ -1,5 +1,9 @@
 # Changelog
 
+## Native 32 Hz and demand loading · 2026-11-12
+
+Double temporal sampling from 16 to 32 real frames per second, preserving 1× playback and the lighter surface mesh. Load geometry and eight-frame blocks for the visible condition/hemisphere, cache revisited blocks, and prefetch during playback. Add buffering/retry states, checksum verification and stale-response protection. Stable full-story and NFC addresses are unchanged.
+
 ## Mobile surface budget restored · 2026-11-12
 
 Restore the previous 8% native display mesh and immutable v2 data asset after slow-loading feedback: about 22,000 triangles per hemisphere, 7.4 MB gzip instead of 21.5 MB. Retain the current contour rendering, pale fills/cortex, synchronized rotation and developer panel. Restore exporter default to `.08`; stable Pages and NFC URLs are unchanged.

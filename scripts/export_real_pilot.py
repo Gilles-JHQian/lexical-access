@@ -101,11 +101,13 @@ def export(args):
             rois=tasktable.loc[chosen_names,'roi'].astype(str).to_numpy()
             assert np.isfinite(v).all() and np.isfinite(coords).all()
             shared[task_id]=set(chosen_names)
-            # Use exact native samples at 16 Hz, no synthetic resampling or onset/offset shifting.
-            sample=np.arange(0,len(times),8)
+            # Use exact native samples at 32 Hz, no synthetic resampling or onset/offset shifting.
+            sample=np.arange(0,len(times),4)
             sample=sample[(times[sample]>=-.25-1e-9)&(times[sample]<= (1.25 if align=='onset' else .75)+1e-9)]
             webtimes=np.round(times[sample]*1000,6)
             if 'times' in cell:np.testing.assert_array_equal(cell['times'],webtimes)
+            np.testing.assert_allclose(np.diff(webtimes),31.25,atol=1e-6,rtol=0)
+            cell['sampleStepMs']=31.25
             cell['times']=webtimes.tolist();cell['tasks'][task_id]={};cell['counts'][task_id]={}
             cell['roiTraces'][task_id]={}
             for roi,labels in roi_sets.items():

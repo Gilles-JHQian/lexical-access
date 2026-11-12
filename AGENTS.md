@@ -8,3 +8,5 @@ Preserve the mobile experience, accessible native controls, explicit synthetic-f
 Read ARCHITECTURE.md before changing the explorer's data contract. The root index.html remains the synthetic development fixture. poster.html owns the public narrative; scripts/site_template.py inserts the two explorers. package_real_preview.py creates the real deliverable outside this repository. The user requested removing prominent real-data/bipolar badges on 12 November; preserve scientific meaning in the expandable notes instead.
 
 Publication: generated real-data.js is a checksum-pinned GitHub Release asset, never tracked in source Git. Pages receives only the allowlisted build artifact. Preserve the base URL and /hga/ entrance across updates so NFC cards remain valid.
+
+Since the 32 Hz loading revision, the checksum-pinned Release remains a private-path-free aggregate schema-2 build input; the public artifact uses a small schema-3 manifest and content-addressed compressed binary blocks by condition, hemisphere and time. Preserve demand loading, integrity/retry behavior and true native frame timing. Standalone offline previews intentionally embed all data.

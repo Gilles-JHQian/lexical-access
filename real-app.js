@@ -3,12 +3,13 @@
   const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
   const bundle = window.LexicalRealBundle;
   if (!bundle || bundle.kind !== 'real') throw new Error('The real HGA bundle is missing.');
+  const dataLoader = new window.LexicalDataLoader(bundle);
   const motion = matchMedia('(prefers-reduced-motion: reduce)');
   const compact = matchMedia('(max-width:620px)');
   const controllers = [];
   const renderStyle = {...window.LexicalSurfaceView.defaults};
   let developerPanel = null;
-  const defaults = {view:'tasks', align:'onset', direction:'nwwd', hemi:'lh', scope:'all', roi:'all', index:9, speed:1};
+  const defaults = {view:'tasks', align:'onset', direction:'nwwd', hemi:'lh', scope:'all', roi:'all', index:18, speed:1};
   const ms = t => `${t > 0 ? '+' : t < 0 ? '−' : ''}${Math.abs(Math.round(t))} ms`;
 
   async function share(kind, controller) {
@@ -37,11 +38,12 @@
     const state = {...defaults, playing:false}, camera = {yaw:0, pitch:0};
     const cell = () => bundle.cells[metric === 'activation' ? `activation-${state.align}` : `contrast-${state.align}-${state.direction}`];
     let surfaces = [], geometryKey = '', visible = false, raf = null, last = null, cameraRaf = null;
+    let requested = '', failed = '', waitingIndex = null;
     const pressed = (key, value) => all(`[data-${key}]`).forEach(b => b.setAttribute('aria-pressed', String(b.dataset[key] === value)));
 
     function releaseMaps() {
       for (const item of surfaces) item.view.destroy();
-      surfaces = []; geometryKey = '';
+      surfaces = []; geometryKey = ''; requested = ''; waitingIndex = null;
     }
     function queueCameraDraw() {
       if (cameraRaf !== null) return;
@@ -93,14 +95,44 @@
       }
       geometryKey = key;
     }
+    function loading(message, retry=false) {
+      control('load-status').hidden=!message;control('load-message').textContent=message;
+      control('retry').hidden=!retry;
+      control('brain-stage').setAttribute('aria-busy',String(Boolean(message)));
+    }
+    function needFrame(index) {
+      const c=cell(),hemi=state.hemi,key=`${c.metric}:${c.align}:${c.direction}:${hemi}:${index}`;
+      if(failed===key||requested===key)return;
+      requested=key;failed='';loading('Loading this view…');
+      dataLoader.ensure(c,hemi,index).then(()=>{
+        if(requested!==key)return;
+        requested='';last=null;
+        if(waitingIndex===index){state.index=index;waitingIndex=null;renderTime();}
+        else renderMaps();
+      }).catch(error=>{
+        if(requested!==key)return;
+        requested='';failed=key;pause();
+        loading(error.name==='AbortError'?'Loading took too long. Please try again.':error.message+' Please try again.',true);
+      });
+    }
     function renderMaps() {
       prepareMaps();
       if (!visible || !chapter.open || document.hidden) return;
+      const ready=dataLoader.peek(cell(),state.hemi,state.index);
+      if(!ready){needFrame(state.index);return;}
+      if(waitingIndex!==null)return;
+      requested='';failed='';loading('');
       if (!surfaces.length) surfaces = all('[data-control="brain-stage"] canvas').map(canvas => {
         connectRotation(canvas);
         return {view:new window.LexicalSurfaceView(canvas, bundle, state.hemi), task:canvas.dataset.task || null};
       });
-      for (const item of surfaces) item.view.draw(cell(), state.index, {task:item.task, scope:state.scope, camera, style:renderStyle});
+      for (const item of surfaces) {
+        item.view.draw(ready.cell, ready.index, {task:item.task, scope:state.scope, camera, style:renderStyle});
+        item.view.canvas.dataset.time=String(cell().times[state.index]);
+        item.view.canvas.dataset.cell=cell().id||`${metric}-${state.align}`;
+        item.view.canvas.dataset.hemi=state.hemi;
+      }
+      if(state.playing)dataLoader.prefetch(cell(),state.hemi,state.index);
     }
     function trace() {
       const c = cell(), lo = c.times[0], hi = c.times.at(-1);
@@ -144,22 +176,31 @@
       trace(); renderTime();
     }
     function pause() {
-      state.playing = false; if (raf !== null) cancelAnimationFrame(raf); raf = null; last = null;
+      state.playing = false; waitingIndex=null; requested=''; if (raf !== null) cancelAnimationFrame(raf); raf = null; last = null;
       control('play').setAttribute('aria-label', 'Play animation'); control('play').innerHTML = '<span aria-hidden="true">▶</span>';
     }
     function start() {
       controllers.forEach(c => c.pause());
       if (state.index === cell().times.length - 1) state.index = 0;
-      state.playing = true; last = null;
+      state.playing = true; last = null;failed='';
       control('play').setAttribute('aria-label', 'Pause animation'); control('play').innerHTML = '<span aria-hidden="true">Ⅱ</span>';
+      renderTime();
       const tick = now => {
         if (!state.playing) return;
+        if(waitingIndex!==null||!dataLoader.peek(cell(),state.hemi,state.index)){
+          last=null;raf=requestAnimationFrame(tick);return;
+        }
         if (last === null) last = now;
-        const interval = 62.5 / state.speed;
+        const interval = (cell().times[1]-cell().times[0]) / state.speed;
         if (now - last >= interval) {
-          state.index += Math.floor((now - last) / interval); last = now - (now - last) % interval;
-          if (state.index >= cell().times.length) { state.index = cell().times.length - 1; pause(); }
-          renderTime();
+          const next=Math.min(cell().times.length-1,state.index+Math.floor((now-last)/interval));
+          if(!dataLoader.peek(cell(),state.hemi,next)){
+            waitingIndex=next;last=null;needFrame(next);
+          }else{
+            state.index=next;last=now-(now-last)%interval;
+            if(state.index===cell().times.length-1)pause();
+            renderTime();
+          }
         }
         if (state.playing) raf = requestAnimationFrame(tick);
       };
@@ -186,9 +227,10 @@
     control('direction')?.addEventListener('change', e => { pause(); state.direction = e.target.value; render(); });
     control('scope').addEventListener('change', e => { state.scope = e.target.value; render(); });
     control('time').addEventListener('input', e => { pause(); state.index = Number(e.target.value); renderTime(); });
+    control('retry').addEventListener('click',()=>{failed='';requested='';renderMaps();});
     control('reset').addEventListener('click', resetEvent);
     control('reset-view').addEventListener('click', () => setCamera(0,0));
-    control('play').addEventListener('click', () => state.playing ? pause() : start());
+    control('play').addEventListener('click', () => {if(state.playing){pause();renderMaps();}else start();});
     control('speed').addEventListener('change', e => state.speed = Number(e.target.value));
     control('copy-view').addEventListener('click', () => share('current', controller));
     chapter.addEventListener('toggle', () => { if (!chapter.open) { pause(); releaseMaps(); } else renderMaps(); });
@@ -251,13 +293,25 @@
 
   controllers.push(...$$('[data-explorer]').map(createExplorer));
   developerPanel=setupDeveloperPanel();
-  // The hero is a single still; release its GPU context before visitors scroll to the players.
-  const heroCanvas = document.createElement('canvas'); $('#hero-brain').append(heroCanvas);
-  const heroView = new window.LexicalSurfaceView(heroCanvas, bundle, 'lh');
-  heroView.draw(bundle.cells['activation-onset'], 12, {task:'repeat'});
-  const heroImage = new Image(); heroImage.alt = 'Left hemisphere high-gamma activity during repetition';
-  heroImage.width = heroCanvas.width; heroImage.height = heroCanvas.height; heroImage.src = heroCanvas.toDataURL();
-  heroCanvas.replaceWith(heroImage); heroView.destroy();
+  // Fetch one hero block only when the story header is visible. Direct NFC/contrast
+  // entrances do not download activation just to build an offscreen illustration.
+  const hero=$('#hero-brain');let heroBusy=false,heroDone=false;
+  async function renderHero(){
+    if(heroBusy||heroDone||document.hidden)return;
+    heroBusy=true;
+    try{
+      const c=bundle.cells['activation-onset'],index=c.times.indexOf(500);
+      const ready=await dataLoader.ensure(c,'lh',index);
+      const canvas=document.createElement('canvas');hero.append(canvas);
+      const view=new window.LexicalSurfaceView(canvas,bundle,'lh');view.draw(ready.cell,ready.index,{task:'repeat'});
+      const img=new Image();img.alt='Left hemisphere high-gamma activity during repetition';
+      img.width=canvas.width;img.height=canvas.height;img.src=canvas.toDataURL();canvas.replaceWith(img);view.destroy();heroDone=true;
+    }catch{hero.textContent='Brain preview unavailable.';}finally{heroBusy=false;}
+  }
+  if('IntersectionObserver' in window){
+    // Let initial hash navigation settle before observing the header.
+    setTimeout(()=>new IntersectionObserver(entries=>{if(entries.at(-1).isIntersecting)renderHero();}).observe(hero),150);
+  }else if(!location.hash)renderHero();
 
   function applyHash() {
     let [target, query = ''] = location.hash.slice(1).split('?');
