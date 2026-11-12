@@ -5,8 +5,8 @@ const fs = require('node:fs/promises');
 const path = require('node:path');
 const root = path.resolve(__dirname, '..');
 const output = path.resolve(process.env.SITE_QA_OUTPUT || path.join(root, '../lexical_access_site_preview'));
-const publicFiles = new Set(['index.html', 'styles.css', 'app.js', 'mock-data.js', 'assets/favicon.svg']);
-const mime = { '.html': 'text/html', '.css': 'text/css', '.js': 'text/javascript', '.svg': 'image/svg+xml' };
+const publicFiles = new Set(['index.html', 'styles.css', 'app.js', 'mock-data.js', 'assets/favicon.svg','assets/cogan-lab.png','assets/duke-bme.png']);
+const mime = { '.html': 'text/html', '.css': 'text/css', '.js': 'text/javascript', '.svg': 'image/svg+xml', '.png': 'image/png' };
 const checks = [], errors = [], requests = [];
 const check = (name, value) => { assert.ok(value, name); checks.push(name); };
 const server = http.createServer(async (req, res) => {

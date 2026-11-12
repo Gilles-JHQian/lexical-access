@@ -1,0 +1,39 @@
+{
+  "cogan-lab": {
+    "source_url": "https://raw.githubusercontent.com/coganlab/IEEG_Pipelines/b2ad2c8ec842419f00db1c59af1373fbb75dce34/docs/images/lab_logo.png",
+    "sha256": "f7b342630f721c5df27efce87b38dff43c0d77caf1e0c93df3225d828eeda403",
+    "original_pixels": [
+      1533,
+      274
+    ],
+    "visible_bbox_alpha_gt_20": [
+      160,
+      32,
+      1308,
+      219
+    ],
+    "layout_crop": [
+      160,
+      32,
+      1308,
+      219
+    ],
+    "note": "Original source bytes preserved; transparent padding omitted in layout only."
+  },
+  "duke-bme": {
+    "source_url": "https://bme.duke.edu/wp-content/uploads/sites/6/2024/03/Duke-BME-Logo-RGB-Horizontal-Navy.png",
+    "sha256": "5b3e2fadd8e7d492208dc3c52c990c41472078d1358e69ae6084c9bd7115bb17",
+    "original_pixels": [
+      2560,
+      349
+    ],
+    "visible_bbox_alpha_gt_20": [
+      0,
+      0,
+      2560,
+      349
+    ],
+    "layout_crop": null,
+    "note": "Original source bytes preserved; transparent padding omitted in layout only."
+  }
+}
