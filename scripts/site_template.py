@@ -1,6 +1,8 @@
 """Shared real-pilot HTML template for local previews and GitHub Pages."""
 import re
 
+PUBLIC_ASSETS = ('assets/favicon.svg', 'assets/cogan-lab.png', 'assets/duke-bme.png')
+
 
 def real_html(r):
     s=(r/'index.html').read_text().replace('<script defer src="./mock-data.js"></script>','<script defer src="./real-data.js"></script>').replace('<script defer src="./app.js"></script>','<script defer src="./surface-view.js"></script>\n  <script defer src="./real-app.js"></script>')
