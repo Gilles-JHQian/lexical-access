@@ -6,6 +6,8 @@
   const motion = matchMedia('(prefers-reduced-motion: reduce)');
   const compact = matchMedia('(max-width:620px)');
   const controllers = [];
+  const renderStyle = {...window.LexicalSurfaceView.defaults};
+  let developerPanel = null;
   const defaults = {view:'tasks', align:'onset', direction:'nwwd', hemi:'lh', scope:'all', roi:'all', index:9, speed:1};
   const ms = t => `${t > 0 ? '+' : t < 0 ? '−' : ''}${Math.abs(Math.round(t))} ms`;
 
@@ -29,8 +31,9 @@
 
   function createExplorer(root) {
     const metric = root.dataset.explorer, chapter = root.closest('.chapter');
-    const control = name => root.querySelector(`[data-control="${name}"]`);
-    const all = selector => [...root.querySelectorAll(selector)];
+    const developerControls = root.querySelector('.developer-controls');
+    const control = name => root.querySelector(`[data-control="${name}"]`) || developerControls.querySelector(`[data-control="${name}"]`);
+    const all = selector => [...new Set([...root.querySelectorAll(selector), ...developerControls.querySelectorAll(selector)])];
     const state = {...defaults, playing:false}, camera = {yaw:0, pitch:0};
     const cell = () => bundle.cells[metric === 'activation' ? `activation-${state.align}` : `contrast-${state.align}-${state.direction}`];
     let surfaces = [], geometryKey = '', visible = false, raf = null, last = null, cameraRaf = null;
@@ -97,7 +100,7 @@
         connectRotation(canvas);
         return {view:new window.LexicalSurfaceView(canvas, bundle, state.hemi), task:canvas.dataset.task || null};
       });
-      for (const item of surfaces) item.view.draw(cell(), state.index, {task:item.task, scope:state.scope, camera});
+      for (const item of surfaces) item.view.draw(cell(), state.index, {task:item.task, scope:state.scope, camera, style:renderStyle});
     }
     function trace() {
       const c = cell(), lo = c.times[0], hi = c.times.at(-1);
@@ -134,7 +137,7 @@
       control('time-label').textContent = `Time from stimulus ${state.align}`;
       control('time-ticks').dataset.align = state.align;
       control('time-ticks').innerHTML = `<span>${ms(c.times[0])}</span><span class="zero-tick" style="left:${-c.times[0] / (c.times.at(-1) - c.times[0]) * 100}%">0</span><span>${ms(c.times.at(-1))}</span>`;
-      control('signal-key').innerHTML = `<span class="key-ramp contrast-ramp"></span><span>−${c.upper} ← 0 → +${c.upper} · ${metric === 'activation' ? 'HGA surface sum' : 'PW − W surface sum'}</span>`;
+      control('signal-key').innerHTML = state.view === 'contours' ? `<span>Solid + · dashed − · pale task fill${state.scope !== 'none' && renderStyle.overlap !== 'none' ? (renderStyle.overlap === 'hatch' ? ' · hatching: spatial overlap' : ' · blue tint: spatial overlap') : ''}</span>` : `<span class="key-ramp contrast-ramp"></span><span>−${c.upper} ← 0 → +${c.upper} · ${metric === 'activation' ? 'HGA surface sum' : 'PW − W surface sum'}</span>`;
       control('selection-note').textContent = `Fixed selection window: ${c.selectionWindow.map(v => v.toFixed(2)).join(' to ')} s from stimulus ${state.align}.`;
       control('counts-note').textContent = `${state.hemi.toUpperCase()} map contacts: ${bundle.tasks.map(t => `${t.label} ${c.counts[t.id][state.hemi]}`).join('; ')}. Bilateral curve contacts (${bundle.roiLabels[state.roi]}): ${bundle.tasks.map(t => `${t.label} ${c.roiTraces[t.id][state.roi].n || '0 (no data)'}`).join('; ')}.`;
       control('kernel-note').textContent = `${c.kernel} spatial kernel. Contour level: ±${c.level}. Surface color depends on both amplitude and contact coverage. Curves are selection-conditioned, not an independent test of selection.`;
@@ -169,16 +172,19 @@
       const allowed = {view:['tasks','contours'], align:['onset','offset'], direction:['nwwd','wdnw'], hemi:['lh','rh'], scope:['all','active','none'], roi:Object.keys(bundle.roiLabels)};
       for (const [key, choices] of Object.entries(allowed)) if (choices.includes(params.get(key))) state[key] = params.get(key);
       const number = (key, fallback) => params.has(key) && Number.isFinite(Number(params.get(key))) ? Number(params.get(key)) : fallback;
+      for(const [param,key,lo,hi] of [['fill','fillOpacity',0,.45],['line','lineWidth',.75,3],['brain','brightness',.8,1],['fold','curvature',.03,.25],['smooth','smoothing',0,1.5]])if(params.has(param))renderStyle[key]=Math.max(lo,Math.min(hi,number(param,renderStyle[key])));
+      if(['none','hatch','tint'].includes(params.get('overlap')))renderStyle.overlap=params.get('overlap');
+      developerPanel?.syncAppearance();controllers.filter(c=>c.metric!==metric).forEach(c=>c.refresh());
       setCamera(number('yaw', 0), number('pitch', 0)); state.index = nearest(number('t', 300)); render();
     }
-    const controller = {metric, root, chapter, pause, restore, hash:() => (metric === 'activation' ? 'hga?' : 'contrast?') + new URLSearchParams({view:state.view, align:state.align, direction:state.direction, hemi:state.hemi, scope:state.scope, roi:state.roi, t:String(cell().times[state.index]), yaw:camera.yaw.toFixed(1), pitch:camera.pitch.toFixed(1)})};
+    const controller = {metric, root, chapter, pause, restore, developerControls, refresh:render, hash:() => (metric === 'activation' ? 'hga?' : 'contrast?') + new URLSearchParams({view:state.view, align:state.align, direction:state.direction, hemi:state.hemi, scope:state.scope, roi:state.roi, t:String(cell().times[state.index]), yaw:camera.yaw.toFixed(1), pitch:camera.pitch.toFixed(1), fill:String(renderStyle.fillOpacity), line:String(renderStyle.lineWidth), brain:String(renderStyle.brightness), fold:String(renderStyle.curvature), overlap:renderStyle.overlap, smooth:String(renderStyle.smoothing)})};
     control('roi-controls').insertAdjacentHTML('beforeend', Object.entries(bundle.roiLabels).map(([id,label]) => `<button type="button" data-roi="${id}" aria-pressed="${id === state.roi}">${label}</button>`).join(''));
     const settings = () => control('settings').open = !compact.matches;
     settings(); compact.addEventListener('change', settings);
     for (const key of ['view','roi','hemi']) all(`[data-${key}]`).forEach(b => b.addEventListener('click', () => { pause(); state[key] = b.dataset[key]; render(); }));
     control('alignment').addEventListener('change', e => { state.align = e.target.value; resetEvent(); });
     control('direction')?.addEventListener('change', e => { pause(); state.direction = e.target.value; render(); });
-    control('scope').addEventListener('change', e => { state.scope = e.target.value; renderTime(); });
+    control('scope').addEventListener('change', e => { state.scope = e.target.value; render(); });
     control('time').addEventListener('input', e => { pause(); state.index = Number(e.target.value); renderTime(); });
     control('reset').addEventListener('click', resetEvent);
     control('reset-view').addEventListener('click', () => setCamera(0,0));
@@ -192,12 +198,59 @@
     if ('IntersectionObserver' in window) new IntersectionObserver(entries => {
       // An anchor jump can queue both leave and enter records in one delivery.
       visible = entries.at(-1).isIntersecting;
-      if (visible) renderMaps(); else { pause(); releaseMaps(); }
+      if (visible) {renderMaps();developerPanel?.select(controller);} else { pause(); releaseMaps(); }
     }).observe(root); else visible = true;
+    root.addEventListener('pointerdown',()=>developerPanel?.select(controller));
+    root.addEventListener('focusin',()=>developerPanel?.select(controller));
     render(); return controller;
   }
 
+  function setupDeveloperPanel() {
+    const panel=$('#developer-panel'),toggle=$('#developer-toggle'),target=$('#developer-target');
+    let active=controllers[0];
+    for(const c of controllers){$('#developer-groups').append(c.developerControls);c.developerControls.dataset.owner=c.metric;}
+    const ranges=[['brightness','Brain lightness',.8,1,.01],['curvature','Sulcal contrast',.03,.25,.01],['fillOpacity','Contour fill',0,.45,.01],['lineWidth','Contour width',.75,3,.05],['smoothing','Contour smoothing',0,1.5,.1]];
+    $('#developer-appearance').innerHTML=ranges.map(([key,label,min,max,step])=>`<label class="developer-range">${label}<output data-style-output="${key}"></output><input type="range" data-style="${key}" aria-label="${label}" min="${min}" max="${max}" step="${step}" value="${renderStyle[key]}"></label>`).join('')+'<label class="developer-select">Overlap style<select data-style="overlap"><option value="hatch">Fine hatching</option><option value="tint">Soft blue tint</option><option value="none">Hidden</option></select></label>';
+    function syncAppearance(){
+      for(const [key] of ranges){$(`[data-style="${key}"]`).value=renderStyle[key];$(`[data-style-output="${key}"]`).textContent=key==='lineWidth'?`${renderStyle[key].toFixed(2)} px`:key==='smoothing'?`${renderStyle[key].toFixed(1)} mm`:`${Math.round(renderStyle[key]*100)}%`;}
+      $('[data-style=overlap]').value=renderStyle.overlap;
+    }
+    function select(controller){
+      if(!controller)return;active=controller;target.value=controller.metric;
+      for(const c of controllers)c.developerControls.hidden=c!==controller;
+      $('#developer-section-name').textContent=controller.metric==='activation'?'HGA activation':'HGA contrast';
+    }
+    function close(){panel.hidden=true;toggle.setAttribute('aria-expanded','false');toggle.focus({preventScroll:true});}
+    toggle.addEventListener('click',()=>{panel.hidden=!panel.hidden;toggle.setAttribute('aria-expanded',String(!panel.hidden));if(!panel.hidden){clamp();target.focus({preventScroll:true});}});
+    $('#developer-close').addEventListener('click',close);
+    panel.addEventListener('keydown',e=>{if(e.key==='Escape'){e.preventDefault();close();}});
+    target.addEventListener('change',()=>{const c=controllers.find(c=>c.metric===target.value);select(c);c.chapter.open=true;c.root.scrollIntoView({behavior:motion.matches?'instant':'smooth',block:'start'});});
+    $('#developer-appearance').addEventListener('input',e=>{
+      const key=e.target.dataset.style;if(!key)return;renderStyle[key]=key==='overlap'?e.target.value:Number(e.target.value);
+      syncAppearance();controllers.forEach(c=>c.refresh());
+    });
+    $('#developer-copy').addEventListener('click',()=>share('current',active));
+    $('#developer-reset').addEventListener('click',()=>{Object.assign(renderStyle,window.LexicalSurfaceView.defaults);syncAppearance();controllers.forEach(c=>c.refresh());});
+    $('#developer-hide').addEventListener('click',()=>{
+      panel.hidden=true;toggle.hidden=true;const url=new URL(location.href);url.searchParams.set('dev','0');history.replaceState(null,'',url);active.root.setAttribute('tabindex','-1');active.root.focus({preventScroll:true});
+    });
+    const dev=new URL(location.href).searchParams.get('dev');
+    toggle.hidden=dev==='0'||(dev!=='1'&&document.body.dataset.developerTools==='false');
+    const handle=$('#developer-drag');let drag=null,moved=false;
+    function clamp(){if(!moved)return;const r=panel.getBoundingClientRect();panel.style.left=`${Math.max(8,Math.min(innerWidth-r.width-8,r.left))}px`;panel.style.top=`${Math.max(8,Math.min(innerHeight-r.height-8,r.top))}px`;}
+    handle.addEventListener('pointerdown',e=>{
+      if(e.target.closest('button')||e.isPrimary===false||(e.pointerType==='mouse'&&e.button!==0))return;
+      const r=panel.getBoundingClientRect();drag={id:e.pointerId,x:e.clientX-r.left,y:e.clientY-r.top};handle.setPointerCapture(e.pointerId);moved=true;
+      panel.style.right='auto';panel.style.bottom='auto';panel.style.left=r.left+'px';panel.style.top=r.top+'px';
+    });
+    handle.addEventListener('pointermove',e=>{if(drag?.id!==e.pointerId)return;panel.style.left=e.clientX-drag.x+'px';panel.style.top=e.clientY-drag.y+'px';clamp();});
+    for(const event of ['pointerup','pointercancel','lostpointercapture'])handle.addEventListener(event,e=>{if(drag?.id===e.pointerId){drag=null;if(handle.hasPointerCapture(e.pointerId))handle.releasePointerCapture(e.pointerId);}});
+    window.addEventListener('resize',()=>{if(!panel.hidden)clamp();});
+    syncAppearance();select(active);return {select,syncAppearance};
+  }
+
   controllers.push(...$$('[data-explorer]').map(createExplorer));
+  developerPanel=setupDeveloperPanel();
   // The hero is a single still; release its GPU context before visitors scroll to the players.
   const heroCanvas = document.createElement('canvas'); $('#hero-brain').append(heroCanvas);
   const heroView = new window.LexicalSurfaceView(heroCanvas, bundle, 'lh');
@@ -215,6 +268,7 @@
     const controller = controllers.find(c => c.chapter === element);
     controllers.filter(c => c !== controller).forEach(c => c.pause());
     if (element.matches('details')) element.open = true;
+    if(controller)developerPanel?.select(controller);
     if (controller && query) controller.restore(params);
     requestAnimationFrame(() => (controller?.root || element).scrollIntoView({behavior:motion.matches ? 'instant' : 'smooth', block:'start'}));
   }

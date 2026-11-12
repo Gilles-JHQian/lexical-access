@@ -15,6 +15,7 @@ def packed(values, dtype):
 
 def export(args):
     root, out = args.workspace.resolve(), args.output.resolve()
+    if not .01 <= args.mesh_fraction <= .4: raise ValueError('Mesh fraction must keep indexed vertices within uint16')
     if out == Path(__file__).resolve().parents[1] or Path(__file__).resolve().parents[1] in out.parents:
         raise ValueError('Generated data must remain outside the code repository')
     (out/'figs').mkdir(parents=True, exist_ok=True); (out/'meta').mkdir(exist_ok=True)
@@ -46,21 +47,22 @@ def export(args):
     for hemi in ['lh','rh']:
         entry=_get_surface_cache(str(args.recon),'avg35','inflated',hemi)
         faces=entry['faces']; mesh=pv.PolyData(entry['verts'],np.column_stack((np.full(len(faces),3),faces)).ravel())
-        reduced=mesh.decimate_pro(.92,preserve_topology=True)
+        reduced=mesh.decimate_pro(1-args.mesh_fraction,preserve_topology=True)
         # Native-resolution area-weighted normals preserve the sulcal shape after display decimation.
         full_normals=_get_surface_normals(entry)
         assert np.isfinite(full_normals).all()
         distance,ids=cKDTree(entry['verts']).query(reduced.points)
         assert distance.max()<1e-4, 'Decimation moved vertices; cannot silently change white mapping'
         smallfaces=reduced.faces.reshape(-1,4)[:,1:]
+        assert len(ids)<65536 and smallfaces.max()<65536
         colors=curvature_rgb(str(args.recon),default_cortex('inflated'),'avg35',hemi)[ids]
         points=entry['verts'][ids]
         mesh_ids[hemi]=ids
         data['geometries'][hemi]=dict(positions=packed(points,'<f4'),faces=packed(smallfaces,'<u2'),normals=packed(full_normals[ids],'<f4'),colors=packed(np.round(colors*255),'|u1'))
-        audit['geometry'][hemi]=dict(normal_source='full-resolution inflated surface',retained_fraction=.08,full_vertices=len(entry['verts']),vertices=len(ids),faces=len(smallfaces),max_vertex_displacement=float(distance.max()),white_vertex_ids_sha256=hashlib.sha256(ids.tobytes()).hexdigest())
+        audit['geometry'][hemi]=dict(normal_source='full-resolution inflated surface',retained_fraction=args.mesh_fraction,full_vertices=len(entry['verts']),vertices=len(ids),faces=len(smallfaces),max_vertex_displacement=float(distance.max()),white_vertex_ids_sha256=hashlib.sha256(ids.tobytes()).hexdigest())
         for path,*_ in entry['source_signature']:snapshots[str(path)]=sha(path)
         print('geometry',hemi,len(ids),len(smallfaces),flush=True)
-    mapping_path=args.viz.parent/'final_figures/lexical_access/scripts/coarse_roi_mapping_v2.json'
+    mapping_path=args.roi_mapping or args.viz.parent/'final_figures/lexical_access/scripts/coarse_roi_mapping_v2.json'
     mapping=json.loads(mapping_path.read_text());snapshots[str(mapping_path)]=sha(mapping_path)
     group_rois={g['id']:set(g['rois']) for g in mapping['groups']}
     roi_sets={'all':None,'st':group_rois['superior_temporal'],'ventral':group_rois['ventral_temporal'],'frontal':group_rois['prefrontal']}
@@ -139,5 +141,5 @@ def export(args):
     print('EXPORT PASS',audit['bundle_bytes'],flush=True)
 
 if __name__=='__main__':
-    p=argparse.ArgumentParser();p.add_argument('--workspace',type=Path,required=True);p.add_argument('--viz',type=Path,required=True);p.add_argument('--recon',type=Path,required=True);p.add_argument('--output',type=Path,required=True)
+    p=argparse.ArgumentParser();p.add_argument('--workspace',type=Path,required=True);p.add_argument('--viz',type=Path,required=True);p.add_argument('--recon',type=Path,required=True);p.add_argument('--output',type=Path,required=True);p.add_argument('--mesh-fraction',type=float,default=.24);p.add_argument('--roi-mapping',type=Path)
     export(p.parse_args())

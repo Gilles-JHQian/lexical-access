@@ -2,7 +2,7 @@
 const {chromium}=require('playwright');
 const assert=require('node:assert/strict'),fs=require('node:fs/promises'),path=require('node:path'),http=require('node:http');
 const config=require('../deployment.json');
-const output=path.resolve(process.env.SITE_POSTER_OUTPUT||path.join(__dirname,'../../lexical_access_site_preview/poster-story-v4'));
+const output=path.resolve(process.env.SITE_POSTER_OUTPUT||path.join(__dirname,'../../lexical_access_site_preview/hd-contours-v5'));
 const checks=[],errors=[]; const check=(name,value)=>{assert.ok(value,name);checks.push(name);};
 let browser,server;
 (async()=>{
@@ -22,7 +22,10 @@ let browser,server;
  browser=await chromium.launch({args:['--enable-unsafe-swiftshader']});
  const context=await browser.newContext({viewport:{width:390,height:844},hasTouch:true,reducedMotion:'reduce'});
  const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));page.on('response',r=>{if(r.status()>=400)errors.push(r.url()+': '+r.status());});
- const explorer=m=>page.locator(`[data-explorer=${m}]`),control=(m,n)=>explorer(m).locator(`[data-control="${n}"]`),canvases=m=>control(m,'brain-stage').locator('canvas');
+ const explorer=m=>page.locator(`[data-explorer=${m}]`),control=(m,n)=>page.locator(`[data-explorer=${m}] [data-control="${n}"], [data-owner=${m}] [data-control="${n}"]`),canvases=m=>control(m,'brain-stage').locator('canvas');
+ const openDev=async m=>{if(await page.locator('#developer-panel').isHidden())await page.locator('#developer-toggle').click();if(await page.locator('#developer-target').inputValue()!==m)await page.locator('#developer-target').selectOption(m);};
+ const closeDev=async()=>{if(await page.locator('#developer-panel').isVisible())await page.locator('#developer-close').click();};
+ const setView=async(m,v)=>{await openDev(m);await page.locator(`[data-owner=${m}] [data-view=${v}]`).click();await closeDev();};
  const navigate=async hash=>{
   await page.evaluate(h=>{if(location.hash===h)window.dispatchEvent(new HashChangeEvent('hashchange'));else location.hash=h;},hash);
   const m=hash.startsWith('#contrast')||hash.includes('metric=contrast')||hash==='#components'?'contrast':'activation';
@@ -55,7 +58,7 @@ let browser,server;
   await page.locator('.nav-explore').click();await page.waitForFunction(()=>document.querySelector('#hga').open);
  }
  await page.setViewportSize({width:390,height:844});await navigate('#hga');
- check('Activation has three dense WebGL maps',await canvases('activation').evaluateAll(cs=>cs.length===3&&cs.every(c=>c.dataset.renderer==='webgl'&&Number(c.dataset.faces)>20000)));
+ check('Activation has three dense WebGL maps',await canvases('activation').evaluateAll(cs=>cs.length===3&&cs.every(c=>c.dataset.renderer==='webgl'&&Number(c.dataset.faces)>60000)));
  check('Activation and contrast have separate timelines',await page.locator('[data-control=time]').count()===2&&await control('activation','direction').count()===0&&await control('contrast','direction').count()===1);
  const initial=await canvases('activation').first().evaluate(c=>c.toDataURL());
  await control('activation','time').fill('16');await control('activation','time').dispatchEvent('input');
@@ -66,9 +69,9 @@ let browser,server;
  await page.mouse.move(x,y);await page.mouse.down();await page.mouse.move(x+36,y+16,{steps:6});await page.mouse.up();await page.waitForTimeout(80);
  check('Dragging synchronizes three activation maps',await synced('activation')&&(await camera('activation'))[0]!=='0:0');
  const angle=(await camera('activation'))[0];
- await explorer('activation').locator('[data-view=contours]').click();await page.waitForTimeout(100);check('Contour retains activation camera',(await camera('activation'))[0]===angle&&await canvases('activation').count()===1);
- for(const scope of ['none','active','all']){await control('activation','scope').selectOption(scope);check('Overlap scope '+scope,await control('activation','scope').inputValue()===scope);}
- await explorer('activation').locator('[data-view=tasks]').click();await control('activation','settings').locator('summary').click();
+ await setView('activation','contours');await page.waitForTimeout(100);check('Contour retains activation camera',(await camera('activation'))[0]===angle&&await canvases('activation').count()===1);
+ await openDev('activation');for(const scope of ['none','active','all']){await control('activation','scope').selectOption(scope);check('Overlap scope '+scope,await control('activation','scope').inputValue()===scope);}
+ await closeDev();await setView('activation','tasks');await control('activation','settings').locator('summary').click();
  await control('activation','alignment').selectOption('offset');check('Offset uses own time zero and native support',await control('activation','time-output').textContent()==='0 ms'&&await control('activation','time').getAttribute('max')==='16');
  await explorer('activation').locator('[data-hemi=rh]').click();check('Hemisphere and alignment preserve rotation',await synced('activation')&&(await camera('activation'))[0]===angle);
  check('RH source counts remain correct',(await control('activation','counts-note').textContent()).includes('Repetition 221'));
@@ -113,8 +116,34 @@ let browser,server;
  check('Published data release unchanged',(await (await context.request.get(base+'version.json')).json()).data_sha256===config.data_sha256);
  await page.screenshot({path:path.join(output,'figs',prefix+'mobile-activation.png')});
  await navigate('#contrast');await page.screenshot({path:path.join(output,'figs',prefix+'mobile-contrast.png')});
+ await navigate('#contrast?view=contours&t=500');
+ check('Contours use extracted mesh lines',await canvases('contrast').first().evaluate(c=>Number(c.dataset.segments)>100));
+ check('Tweak controls are absent from main explorers',await page.locator('.explorer [data-view],.explorer [data-control=scope]').count()===0);
+ await openDev('contrast');
+ check('Developer window targets current section',await page.locator('#developer-target').inputValue()==='contrast');
+ const filled=await canvases('contrast').first().evaluate(c=>c.toDataURL());
+ await page.locator('[data-style=fillOpacity]').fill('0');await page.locator('[data-style=fillOpacity]').dispatchEvent('input');
+ check('Fill control changes rendered contour pixels',await canvases('contrast').first().evaluate(c=>c.toDataURL())!==filled);
+ await page.locator('[data-style=fillOpacity]').fill('0.24');await page.locator('[data-style=fillOpacity]').dispatchEvent('input');
+ await page.locator('[data-style=overlap]').selectOption('tint');
+ check('Overlap style affects map interpretation',(await control('contrast','signal-key').textContent()).includes('blue tint'));
+ await page.screenshot({path:path.join(output,'figs',prefix+'mobile-developer-panel.png')});
+ for(const width of [320,390,768]){await page.setViewportSize({width,height:844});check('Floating controls fit '+width,await page.locator('#developer-panel').evaluate(e=>{const r=e.getBoundingClientRect();return r.left>=0&&r.right<=innerWidth&&r.top>=0&&r.bottom<=innerHeight;}));}
+ await page.setViewportSize({width:390,height:844});
+ const handle=await page.locator('#developer-drag').boundingBox(),beforePanel=await page.locator('#developer-panel').boundingBox();
+ await page.mouse.move(handle.x+60,handle.y+20);await page.mouse.down();await page.mouse.move(handle.x+40,handle.y+55,{steps:5});await page.mouse.up();
+ const afterPanel=await page.locator('#developer-panel').boundingBox();check('Developer window can be dragged',Math.abs(afterPanel.y-beforePanel.y)>15);
+ await page.locator('[data-style=smoothing]').fill('0');await page.locator('[data-style=smoothing]').dispatchEvent('input');
+ check('Exact unsmoothed isolines remain selectable',await page.locator('[data-style-output=smoothing]').textContent()==='0.0 mm');
+ await page.evaluate(()=>Object.defineProperty(navigator,'clipboard',{value:undefined,configurable:true}));await page.locator('#developer-copy').click();check('Tuned links include appearance and smoothing',(await page.locator('#share-url').inputValue()).includes('smooth=0')&&(await page.locator('#share-url').inputValue()).includes('fill=0.24'));await page.getByRole('button',{name:'Done',exact:true}).click();
+ await page.locator('#developer-reset').click();check('Appearance reset restores pale fill',await page.locator('[data-style=fillOpacity]').inputValue()==='0.18');
+ await page.locator('#developer-hide').click();check('Hide removes both panel and launcher',await page.locator('#developer-panel').isHidden()&&await page.locator('#developer-toggle').isHidden()&&new URL(page.url()).searchParams.get('dev')==='0');
+ await page.goto(base+'?dev=1#contrast?view=contours&t=500');await page.waitForSelector('#contrast-explorer canvas[data-camera]');
+ check('Developer tools can be reopened explicitly',await page.locator('#developer-toggle').isVisible());
+ await page.screenshot({path:path.join(output,'figs',prefix+'mobile-contours-hd.png')});
  await page.setViewportSize({width:1440,height:1050});await page.goto(base);await page.waitForSelector('#hero-brain img');await page.screenshot({path:path.join(output,'figs',prefix+'desktop-story.png')});
  await navigate('#contrast?view=contours&yaw=25&pitch=-10&t=500');await page.screenshot({path:path.join(output,'figs',prefix+'desktop-contrast.png')});
+ const hiddenPage=await context.newPage();await hiddenPage.route('**/lexical-access/',async route=>{const response=await route.fetch();await route.fulfill({response,body:(await response.text()).replace('data-developer-tools="true"','data-developer-tools="false"')});});await hiddenPage.goto(base);await hiddenPage.waitForSelector('#hero-brain img');check('Final production flag hides the launcher',await hiddenPage.locator('#developer-toggle').isHidden());await hiddenPage.close();
  const nojs=await browser.newContext({javaScriptEnabled:false,viewport:{width:390,height:844}}),staticPage=await nojs.newPage();await staticPage.goto(base);
  check('Poster narrative is readable without JavaScript',await staticPage.locator('#question .lead').isVisible()&&(await staticPage.locator('#discussion blockquote').textContent()).includes('shared across output modalities'));
  await nojs.close();

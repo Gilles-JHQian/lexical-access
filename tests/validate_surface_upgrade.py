@@ -18,7 +18,7 @@ common={}
 for hemi in ['lh','rh']:
     old,new=before['geometries'][hemi],after['geometries'][hemi]
     positions,faces,normals=map(decode,[new['positions'],new['faces'],new['normals']])
-    assert 20000<len(faces)<65536 and len(positions)<65536
+    assert len(decode(old['faces']))<len(faces) and len(positions)<65536
     assert np.isfinite(positions).all() and np.isfinite(normals).all()
     assert faces.min()>=0 and faces.max()<len(positions)
     np.testing.assert_allclose(np.linalg.norm(normals,axis=1),1,atol=1e-6)

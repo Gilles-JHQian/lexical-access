@@ -12,7 +12,7 @@
   <script defer src="./surface-view.js"></script>
   <script defer src="./real-app.js"></script>
 </head>
-<body class="poster-site">
+<body class="poster-site" data-developer-tools="true">
 <a class="skip-link" href="#main">Skip to content</a>
 <header class="site-header">
   <div class="header-brands">
@@ -95,6 +95,16 @@
 </div>
 <footer class="site-footer wrap"><div><strong>COGAN LAB</strong><p>Duke University</p></div><a href="https://www.coganlab.org/">Visit the lab ↗</a></footer>
 </main>
+<button type="button" id="developer-toggle" class="developer-toggle" aria-expanded="false" aria-controls="developer-panel">⚙ Developer options</button>
+<aside id="developer-panel" class="developer-panel" role="dialog" aria-modal="false" aria-labelledby="developer-title" hidden>
+  <div class="developer-heading" id="developer-drag"><strong id="developer-title">Developer options</strong><button type="button" id="developer-close" aria-label="Minimize developer options">×</button></div>
+  <div class="developer-body"><label class="developer-select">Editing<select id="developer-target"><option value="activation">HGA activation</option><option value="contrast">HGA contrast</option></select></label>
+    <p id="developer-section-name" class="sr-only"></p><div id="developer-groups"></div>
+    <details class="developer-appearance" open><summary>Surface appearance · both sections</summary><div id="developer-appearance"></div></details>
+    <div class="developer-actions"><button type="button" id="developer-copy">Copy tuned view</button><button type="button" id="developer-reset">Reset appearance</button><button type="button" id="developer-hide">Hide developer tools</button></div>
+    <p class="developer-hint">Drag this window by its title. Hidden tools can be reopened with ?dev=1.</p>
+  </div>
+</aside>
 <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 <dialog id="share-dialog"><form method="dialog"><h2>Your share link</h2><p>Copy this address to open the selected view.</p><label for="share-url">Link</label><input id="share-url" readonly><button class="button primary" value="close">Done</button></form></dialog>
 </body>

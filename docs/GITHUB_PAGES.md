@@ -41,3 +41,6 @@ The public narrative follows the final November PPTX, with authors and reference
 Workflow run: https://github.com/Gilles-JHQian/lexical-access/actions/runs/43248285741 (success). Deployed commit: `57c916be76e9a10b0c4c8caf0a2189bba8892ed8`. Data release: https://github.com/Gilles-JHQian/lexical-access/releases/tag/hga-pilot-2026-11-12. HTTPS is enforced. Thirteen browser checks passed against the actual public site, and all nine public runtime resources matched the reviewed local artifact byte-for-byte. `.nojekyll` is a build marker, excluded from the public HTTP byte comparison. Validation records and screenshots are outside Git in `../lexical_access_site_preview/pages-v1/{figs,meta}`.
 
 Manual publication remains the only trigger. Future pushes do not automatically replace the live website; run the workflow only when that update is authorized.
+
+
+Current HD revision: data tag `hga-surface-hd-v3-2026-11-12`, 12-file artifact. `developer_tools` in `deployment.json` controls the temporary floating launcher; set false for final presentation and republish. `?dev=1` can explicitly reopen it. Runtime script/CSS/data URLs use content-hash queries while root/NFC entrances remain unchanged. See HD_SURFACES.md for appearance controls, field preservation and first-load size.
