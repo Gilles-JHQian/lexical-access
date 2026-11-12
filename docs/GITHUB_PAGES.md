@@ -22,7 +22,7 @@ The build uses only Python's standard library. No pipeline, subject data, scient
 python3 scripts/build_public_site.py --bundle /path/to/reviewed/real-data.js --output /path/to/empty/site
 ```
 
-The data bundle must match `deployment.json`. To run public-build browser checks, put the result at `<output>/meta/site`, then run `SITE_PAGES_OUTPUT=<output> npm run test:pages`. To inspect the deployed site use `SITE_PAGES_URL=https://gilles-jhqian.github.io/lexical-access/` as well. Screenshots/reports use sibling `figs`/`meta` directories outside Git.
+The data bundle must match `deployment.json`. To run public-build browser checks, set `SITE_PAGES_ROOT` to that result (default `<output>/meta/site`), then run `SITE_PAGES_OUTPUT=<output> npm run test:pages`. To inspect the deployed site use `SITE_PAGES_URL=https://gilles-jhqian.github.io/lexical-access/` as well. Screenshots/reports use sibling `figs`/`meta` directories outside Git.
 
 Full source numerical validation is retained from the real pilot. Publication checks focus on correct artifact contents, stable copied URLs, real-mode loading, NFC redirects, mobile layout and public resource availability. Physical iOS/Android behavior is for the user's phone check.
 
