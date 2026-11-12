@@ -2,7 +2,7 @@
 const {chromium}=require('playwright');
 const assert=require('node:assert/strict'),fs=require('node:fs/promises'),path=require('node:path'),http=require('node:http');
 const config=require('../deployment.json');
-const output=path.resolve(process.env.SITE_POSTER_OUTPUT||path.join(__dirname,'../../lexical_access_site_preview/mobile-mesh-v6'));
+const output=path.resolve(process.env.SITE_POSTER_OUTPUT||path.join(__dirname,'../../lexical_access_site_preview/lazy-hga-v7'));
 const checks=[],errors=[]; const check=(name,value)=>{assert.ok(value,name);checks.push(name);};
 let browser,server;
 (async()=>{
@@ -10,11 +10,11 @@ let browser,server;
  let base=process.env.SITE_POSTER_URL;
  if(!base){
   const root=process.env.SITE_POSTER_ROOT||path.join(output,'meta/public-site');
-  const allowed=['index.html','real-app.js','surface-view.js','styles.css','real-data.js','site-config.js','version.json','assets/favicon.svg','assets/cogan-lab.png','assets/duke-bme.png','hga/index.html'];
+  const allowed=['index.html','real-app.js','surface-view.js','data-loader.js','styles.css','real-data.js','site-config.js','version.json','assets/favicon.svg','assets/cogan-lab.png','assets/duke-bme.png','hga/index.html'];
   server=http.createServer(async(req,res)=>{
    let file=new URL(req.url,'http://localhost').pathname.replace(/^\/lexical-access\//,'');if(!file||file.endsWith('/'))file+='index.html';
-   if(!allowed.includes(file)){res.writeHead(404).end();return;}
-   try{const types={'.js':'text/javascript','.css':'text/css','.json':'application/json','.png':'image/png','.svg':'image/svg+xml','.html':'text/html'};res.setHeader('Content-Type',types[path.extname(file)]);res.end(await fs.readFile(path.join(root,file)));}catch{res.writeHead(404).end();}
+   if(!allowed.includes(file)&&!/^data\/[a-z0-9-]+\.bin\.gz$/.test(file)){res.writeHead(404).end();return;}
+   try{const types={'.gz':'application/gzip','.js':'text/javascript','.css':'text/css','.json':'application/json','.png':'image/png','.svg':'image/svg+xml','.html':'text/html'};res.setHeader('Content-Type',types[path.extname(file)]);res.end(await fs.readFile(path.join(root,file)));}catch{res.writeHead(404).end();}
   });
   await new Promise(r=>server.listen(0,'127.0.0.1',r));base=`http://127.0.0.1:${server.address().port}/lexical-access/`;
  }
@@ -25,18 +25,19 @@ let browser,server;
  const explorer=m=>page.locator(`[data-explorer=${m}]`),control=(m,n)=>page.locator(`[data-explorer=${m}] [data-control="${n}"], [data-owner=${m}] [data-control="${n}"]`),canvases=m=>control(m,'brain-stage').locator('canvas');
  const openDev=async m=>{if(await page.locator('#developer-panel').isHidden())await page.locator('#developer-toggle').click();if(await page.locator('#developer-target').inputValue()!==m)await page.locator('#developer-target').selectOption(m);};
  const closeDev=async()=>{if(await page.locator('#developer-panel').isVisible())await page.locator('#developer-close').click();};
- const setView=async(m,v)=>{await openDev(m);await page.locator(`[data-owner=${m}] [data-view=${v}]`).click();await closeDev();};
+ const setView=async(m,v)=>{await openDev(m);await page.locator(`[data-owner=${m}] [data-view=${v}]`).click();await closeDev();await ready(m);};
  const navigate=async hash=>{
   await page.evaluate(h=>{if(location.hash===h)window.dispatchEvent(new HashChangeEvent('hashchange'));else location.hash=h;},hash);
   const m=hash.startsWith('#contrast')||hash.includes('metric=contrast')||hash==='#components'?'contrast':'activation';
-  await page.waitForFunction(metric=>{const r=document.querySelector(`[data-explorer=${metric}]`);return r.getBoundingClientRect().top>=0&&r.getBoundingClientRect().top<100&&r.querySelector('canvas[data-camera]');},m);
+  await page.waitForFunction(metric=>{const r=document.querySelector(`[data-explorer=${metric}]`);return r.getBoundingClientRect().top>=0&&r.getBoundingClientRect().top<100&&r.querySelector('canvas[data-camera]')&&r.querySelector('[data-control=brain-stage]').getAttribute('aria-busy')!=='true';},m);
   return m;
  };
+ const ready=async m=>page.waitForFunction(m=>{const r=document.querySelector(`[data-explorer=${m}]`);return r.querySelector('canvas[data-camera]')&&r.querySelector('[data-control=brain-stage]').getAttribute('aria-busy')!=='true';},m);
  const camera=async m=>canvases(m).evaluateAll(cs=>cs.map(c=>c.dataset.camera));
  const synced=async m=>{const values=await camera(m);return values.length===3&&values.every(v=>v===values[0]);};
  const waitAngle=async(m,angle)=>page.waitForFunction(({m,angle})=>[...document.querySelectorAll(`[data-explorer=${m}] [data-control="brain-stage"] canvas`)].every(c=>c.dataset.camera===angle),{m,angle});
  const response=await page.goto(base);check('Story returns 200',response.status()===200);
- await page.waitForSelector('#hero-brain img');
+ await page.waitForSelector('#hero-brain img').catch(async e=>{console.log('HERO DEBUG',errors,await page.locator('#hero-brain').evaluate(e=>({html:e.innerHTML,rect:e.getBoundingClientRect().toJSON(),viewport:innerHeight,resources:performance.getEntriesByType('resource').map(r=>r.name)})));throw e;});
  check('Title follows final poster',(await page.title()).startsWith('Neural Dynamics of Lexical Access Across Response Demands'));
  check('Six narrative chapters follow poster order',await page.locator('.chapter').evaluateAll(cs=>cs.map(c=>c.id).join(',')==='question,design,hga,contrast,decoding,discussion,references'));
  check('Source data remains real',await page.evaluate(()=>window.LexicalRealBundle.kind==='real'));
@@ -61,10 +62,10 @@ let browser,server;
  check('Activation has three WebGL maps at the restored LH face count',await canvases('activation').evaluateAll(cs=>cs.length===3&&cs.every(c=>c.dataset.renderer==='webgl'&&Number(c.dataset.faces)===21988)));
  check('Activation and contrast have separate timelines',await page.locator('[data-control=time]').count()===2&&await control('activation','direction').count()===0&&await control('contrast','direction').count()===1);
  const initial=await canvases('activation').first().evaluate(c=>c.toDataURL());
- await control('activation','time').fill('16');await control('activation','time').dispatchEvent('input');
+ await control('activation','time').fill('32');await control('activation','time').dispatchEvent('input');await ready('activation');
  check('Native measured frame changes surface',await canvases('activation').first().evaluate(c=>c.toDataURL())!==initial);
  check('Native frame time is correct',await control('activation','time-output').textContent()==='+750 ms');
- await control('activation','time').focus();await page.keyboard.press('ArrowLeft');check('Keyboard moves one native frame',await control('activation','time').inputValue()==='15');
+ await control('activation','time').focus();await page.keyboard.press('ArrowLeft');check('Keyboard moves one native frame',await control('activation','time').inputValue()==='31');
  await navigate('#hga');const box=await canvases('activation').first().boundingBox(),x=box.x+box.width/2,y=box.y+box.height/2;
  await page.mouse.move(x,y);await page.mouse.down();await page.mouse.move(x+36,y+16,{steps:6});await page.mouse.up();await page.waitForTimeout(80);
  check('Dragging synchronizes three activation maps',await synced('activation')&&(await camera('activation'))[0]!=='0:0');
@@ -72,14 +73,14 @@ let browser,server;
  await setView('activation','contours');await page.waitForTimeout(100);check('Contour retains activation camera',(await camera('activation'))[0]===angle&&await canvases('activation').count()===1);
  await openDev('activation');for(const scope of ['none','active','all']){await control('activation','scope').selectOption(scope);check('Overlap scope '+scope,await control('activation','scope').inputValue()===scope);}
  await closeDev();await setView('activation','tasks');await control('activation','settings').locator('summary').click();
- await control('activation','alignment').selectOption('offset');check('Offset uses own time zero and native support',await control('activation','time-output').textContent()==='0 ms'&&await control('activation','time').getAttribute('max')==='16');
- await explorer('activation').locator('[data-hemi=rh]').click();check('Hemisphere and alignment preserve rotation',await synced('activation')&&(await camera('activation'))[0]===angle);
+ await control('activation','alignment').selectOption('offset');check('Offset uses own time zero and native support',await control('activation','time-output').textContent()==='0 ms'&&await control('activation','time').getAttribute('max')==='32');
+ await explorer('activation').locator('[data-hemi=rh]').click();await ready('activation');check('Hemisphere and alignment preserve rotation',await synced('activation')&&(await camera('activation'))[0]===angle);
  check('RH uses the restored face count',await canvases('activation').evaluateAll(cs=>cs.length===3&&cs.every(c=>Number(c.dataset.faces)===21384)));
  check('RH source counts remain correct',(await control('activation','counts-note').textContent()).includes('Repetition 221'));
  await control('activation','settings').locator('summary').click();await navigate('#contrast');
  check('Contrast starts with its own three maps and lateral camera',await synced('contrast')&&(await camera('contrast'))[0]==='0:0');
- check('Contrast keeps independent onset support',await control('contrast','time').getAttribute('max')==='24'&&await control('contrast','alignment').inputValue()==='onset');
- await control('contrast','settings').locator('summary').click();await control('contrast','direction').selectOption('wdnw');
+ check('Contrast keeps independent onset support',await control('contrast','time').getAttribute('max')==='48'&&await control('contrast','alignment').inputValue()==='onset');
+ await control('contrast','settings').locator('summary').click();await control('contrast','direction').selectOption('wdnw');await ready('contrast');
  check('Opposite effect selection retains PW minus W sign',(await explorer('contrast').locator('.real-trace-caption').textContent()).includes('Pseudoword − Word'));
  await explorer('contrast').locator('[data-roi=ventral]').click();
  check('Changing contrast ROI leaves activation ROI unchanged',await explorer('activation').locator('[data-roi=all]').getAttribute('aria-pressed')==='true');
@@ -92,11 +93,11 @@ let browser,server;
  await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:tx,y:ty}]});await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:tx+32,y:ty+22}]});await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});await page.waitForTimeout(100);
  check('Touch drag rotates all maps without scrolling',await synced('activation')&&(await camera('activation'))[0]!=='0:0'&&Math.abs(await page.evaluate(()=>scrollY)-scrollBefore)<2);
  check('Pinch zoom remains enabled',await canvases('activation').first().evaluate(c=>getComputedStyle(c).touchAction.includes('pinch-zoom')));
- await control('activation','reset').click();await control('activation','play').click();await page.waitForTimeout(220);
- check('Activation plays native samples',Number(await control('activation','time').inputValue())>4);
+ await control('activation','reset').click();await ready('activation');await control('activation','play').click();await page.waitForTimeout(220);
+ check('Activation plays native samples',Number(await control('activation','time').inputValue())>8);
  await navigate('#contrast');check('Leaving activation pauses it',await control('activation','play').getAttribute('aria-label')==='Play animation');
  await control('contrast','reset').click();await control('contrast','play').click();await page.waitForTimeout(180);
- check('Contrast playback is independent',Number(await control('contrast','time').inputValue())>4&&await control('activation','time').getAttribute('max')==='16');
+ check('Contrast playback is independent',Number(await control('contrast','time').inputValue())>8&&await control('activation','time').getAttribute('max')==='32');
  await page.locator('#contrast > summary').click();await page.waitForFunction(()=>document.querySelector('#contrast-explorer [data-control=play]').getAttribute('aria-label')==='Play animation');check('Collapsing contrast pauses it',await control('contrast','play').getAttribute('aria-label')==='Play animation');
  await page.locator('.chapter-nav a[href="#contrast"]').click();await page.waitForFunction(()=>document.querySelector('#contrast').open);
  check('Same-hash navigation reopens contrast',await page.locator('#contrast').getAttribute('open')!==null);
@@ -141,7 +142,7 @@ let browser,server;
  await page.locator('#developer-hide').click();check('Hide removes both panel and launcher',await page.locator('#developer-panel').isHidden()&&await page.locator('#developer-toggle').isHidden()&&new URL(page.url()).searchParams.get('dev')==='0');
  await page.goto(base+'?dev=1#contrast?view=contours&t=500');await page.waitForSelector('#contrast-explorer canvas[data-camera]');
  check('Developer tools can be reopened explicitly',await page.locator('#developer-toggle').isVisible());
- await page.screenshot({path:path.join(output,'figs',prefix+'mobile-contours-hd.png')});
+ await page.screenshot({path:path.join(output,'figs',prefix+'mobile-contours.png')});
  await page.setViewportSize({width:1440,height:1050});await page.goto(base);await page.waitForSelector('#hero-brain img');await page.screenshot({path:path.join(output,'figs',prefix+'desktop-story.png')});
  await navigate('#contrast?view=contours&yaw=25&pitch=-10&t=500');await page.screenshot({path:path.join(output,'figs',prefix+'desktop-contrast.png')});
  const hiddenPage=await context.newPage();await hiddenPage.route('**/lexical-access/',async route=>{const response=await route.fetch();await route.fulfill({response,body:(await response.text()).replace('data-developer-tools="true"','data-developer-tools="false"')});});await hiddenPage.goto(base);await hiddenPage.waitForSelector('#hero-brain img');check('Final production flag hides the launcher',await hiddenPage.locator('#developer-toggle').isHidden());await hiddenPage.close();

@@ -15,7 +15,7 @@ Source code is pushed to the independent website repository. Generated `real-dat
 
 `.github/workflows/pages.yml` uses a manual `workflow_dispatch` to download that immutable data release, verify the checksum and real-data schema, build an allowlisted static site, upload a Pages artifact and deploy it. The user-requested publication runs this workflow once; later code pushes alone do not publish. Enable Pages with `build_type=workflow` (Settings → Pages → Source → GitHub Actions).
 
-The build uses only Python's standard library. No pipeline, subject data, scientific environment or raw recordings are needed on GitHub Actions. It copies twelve public runtime files (including both original brand PNGs), including `/hga/index.html` and a small `version.json`, and rejects local storage paths. All ordinary assets remain relative for project subpaths. The root source `index.html` is a synthetic development fixture; only the generated Pages artifact is the real public website.
+The build uses only Python's standard library. No pipeline, subject data, scientific environment or raw recordings are needed on GitHub Actions. It emits 99 allowlisted files (86 compressed data blocks and 13 runtime/metadata files, including both original brand PNGs), including `/hga/index.html` and a small `version.json`, and rejects local storage paths. All ordinary assets remain relative for project subpaths. The root source `index.html` is a synthetic development fixture; only the generated Pages artifact is the real public website.
 
 ## Local build and validation
 
@@ -43,4 +43,6 @@ Workflow run: https://github.com/Gilles-JHQian/lexical-access/actions/runs/43248
 Manual publication remains the only trigger. Future pushes do not automatically replace the live website; run the workflow only when that update is authorized.
 
 
-Current mobile revision: restored data tag `hga-surface-v2-2026-11-12` with the current contour renderer, 12-file artifact. `developer_tools` in `deployment.json` controls the temporary floating launcher; set false for final presentation and republish. `?dev=1` can explicitly reopen it. Runtime script/CSS/data URLs use content-hash queries while root/NFC entrances remain unchanged. See HD_SURFACES.md for appearance controls, field preservation and first-load size.
+Current streaming revision: data tag `hga-native-32hz-v4-2026-11-12`, 99-file public artifact with 32 Hz native frames. The Release asset remains the full aggregate build input; Pages serves only the small manifest and demand-loaded binary blocks. `developer_tools` in `deployment.json` controls the temporary floating launcher; set false for final presentation and republish. `?dev=1` can explicitly reopen it. Runtime script/CSS/data URLs use content-hash queries while root/NFC entrances remain unchanged. See HD_SURFACES.md for appearance controls, field preservation and first-load size.
+
+`npm run test:loading` verifies demand boundaries, sub-1 MB initial map payload, cache reuse, stale seeks, retry, corruption rejection and buffering/1× playback. Set SITE_POSTER_ROOT and SITE_POSTER_OUTPUT as for the poster suite. Offline standalone previews intentionally embed every array; use the deployed URL for mobile loading checks.

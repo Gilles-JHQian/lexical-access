@@ -10,7 +10,8 @@
     "test:pages": "node tests/poster-browser.cjs",
     "test:surface": "node tests/poster-browser.cjs",
     "test:poster": "node tests/poster-browser.cjs",
-    "test:contours": "node tests/contour-parity.cjs"
+    "test:contours": "node tests/contour-parity.cjs",
+    "test:loading": "node tests/lazy-browser.cjs"
   },
   "devDependencies": {
     "playwright": "1.65.0"
