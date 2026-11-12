@@ -1,6 +1,6 @@
 name: Publish real HGA pilot
 on:
-  workflow_dispatch:
+  workflow_dispatch: {}
 permissions:
   contents: read
   pages: write
