@@ -14,7 +14,7 @@ Source code is pushed to the independent website repository. Generated `real-dat
 
 `.github/workflows/pages.yml` uses a manual `workflow_dispatch` to download that immutable data release, verify the checksum and real-data schema, build an allowlisted static site, upload a Pages artifact and deploy it. The user-requested publication runs this workflow once; later code pushes alone do not publish. Enable Pages with `build_type=workflow` (Settings → Pages → Source → GitHub Actions).
 
-The build uses only Python's standard library. No pipeline, subject data, scientific environment or raw recordings are needed on GitHub Actions. It copies ten public runtime files, including `/hga/index.html` and a small `version.json`, and rejects local storage paths. All ordinary assets remain relative for project subpaths. The root source `index.html` is a synthetic development fixture; only the generated Pages artifact is the real public website.
+The build uses only Python's standard library. No pipeline, subject data, scientific environment or raw recordings are needed on GitHub Actions. It copies twelve public runtime files (including both original brand PNGs), including `/hga/index.html` and a small `version.json`, and rejects local storage paths. All ordinary assets remain relative for project subpaths. The root source `index.html` is a synthetic development fixture; only the generated Pages artifact is the real public website.
 
 ## Local build and validation
 

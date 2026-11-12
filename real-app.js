@@ -26,6 +26,11 @@
     $('.roi-controls').innerHTML=Object.entries(bundle.roiLabels).map(([id,label])=>`<button type="button" data-roi="${id}" aria-pressed="${id===state.roi}">${label}</button>`).join('');
     $('.trace-header > span').textContent='SELECTED-CONTACT MEAN · BOTH HEMISPHERES';
     $('.explorer-toolbar').insertAdjacentHTML('afterend',`<div class="real-options"><fieldset class="view-controls" id="hemi-controls"><legend class="sr-only">Hemisphere</legend><button data-hemi="lh" aria-pressed="true">LH</button><button data-hemi="rh" aria-pressed="false">RH</button></fieldset><label id="direction-label">Selection <select id="direction"><option value="nwwd">Nw &gt; W set</option><option value="wdnw">W &gt; Nw set</option></select></label><span class="source-line" id="selection-note"></span></div>`);
+    const alignment=$('.explorer-toolbar .select-label'),options=$('.real-options');
+    $('.explorer-toolbar').insertAdjacentHTML('afterend','<details class="map-settings" id="map-settings" open><summary><span>Map settings</span><span id="settings-summary"></span></summary><div class="map-settings-body"></div></details>');
+    $('.map-settings-body').append(alignment,options);
+    const compact=matchMedia('(max-width:620px)'),syncSettings=()=>$('#map-settings').open=!compact.matches;
+    syncSettings();compact.addEventListener('change',syncSettings);
     $('.hero-visual-top').lastElementChild.textContent='BIPOLAR HGA · REAL DATA';
     $('#hero-brain').innerHTML='<canvas aria-label="Real bipolar HGA, left hemisphere" role="img"></canvas>';
     new window.LexicalSurfaceView($('#hero-brain canvas'),bundle,'lh').draw(bundle.cells['activation-onset'],12,{task:'repeat'});
@@ -90,7 +95,7 @@
     let min=Math.min(0,...values),max=Math.max(.01,...values),pad=(max-min)*.12;min-=pad;max+=pad;
     const x=t=>45+(t-lo)/(hi-lo)*815,y=v=>98-(v-min)/(max-min)*80;
     const lines=bundle.tasks.map(t=>{const curve=c.roiTraces[t.id][state.roi];if(!curve.n)return '';return `<path d="${curve.mean.map((v,i)=>`${i?'L':'M'}${x(c.times[i]).toFixed(2)} ${y(v).toFixed(2)}`).join(' ')}" fill="none" stroke="${t.color}" stroke-width="2.2" vector-effect="non-scaling-stroke"/>`;}).join('');
-    $('#trace').innerHTML=`<svg viewBox="0 0 900 130" preserveAspectRatio="none" role="img" aria-label="Real selected-electrode mean time courses"><line x1="45" x2="860" y1="${y(0)}" y2="${y(0)}" stroke="#bac4c9"/><line x1="${x(0)}" x2="${x(0)}" y1="15" y2="100" stroke="#bac4c9" stroke-dasharray="3 4"/>${lines}<line id="trace-cursor" x1="${x(c.times[state.index])}" x2="${x(c.times[state.index])}" y1="12" y2="101" stroke="#142d43"/><text x="3" y="22" font-size="11" fill="#526272">${max.toFixed(2)}</text><text x="3" y="100" font-size="11" fill="#526272">${min.toFixed(2)}</text></svg>`;
+    $('#trace').innerHTML=`<div class="trace-plot"><svg viewBox="0 0 900 130" preserveAspectRatio="none" role="img" aria-label="Real selected-electrode mean time courses"><line x1="45" x2="860" y1="${y(0)}" y2="${y(0)}" stroke="#bac4c9"/><line x1="${x(0)}" x2="${x(0)}" y1="15" y2="100" stroke="#bac4c9" stroke-dasharray="3 4"/>${lines}<line id="trace-cursor" x1="${x(c.times[state.index])}" x2="${x(c.times[state.index])}" y1="12" y2="101" stroke="#142d43"/></svg><span class="trace-axis-label trace-axis-upper" aria-hidden="true">${max.toFixed(2)}</span><span class="trace-axis-label trace-axis-lower" aria-hidden="true">${min.toFixed(2)}</span></div>`;
     $('#trace').insertAdjacentHTML('beforeend',`<p class="real-trace-caption">${c.units} · ${bundle.tasks.map(t=>`${t.label} n=${c.roiTraces[t.id][state.roi].n || '0 (no data)'}`).join(' · ')}</p>`);
   }
   function renderTime() {
@@ -104,6 +109,7 @@
     const c=cell();state.index=Math.max(0,Math.min(c.times.length-1,state.index));
     for(const key of ['metric','view','roi','hemi'])pressed(key,state[key]);
     $('#alignment').value=state.align;$('#direction').value=state.direction;$('#shared-scope').value=state.scope;
+    $('#settings-summary').textContent=`${state.hemi.toUpperCase()} · ${state.align}${state.metric==='contrast'?' · '+(state.direction==='nwwd'?'Nw > W':'W > Nw'):''}`;
     $('#direction-label').hidden=state.metric!=='contrast';$('#overlay-options').hidden=state.view!=='contours';
     $('#time').min=0;$('#time').max=c.times.length-1;$('#time').step=1;
     $('.time-label label').textContent=`Time from stimulus ${state.align}`;

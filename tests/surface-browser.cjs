@@ -14,8 +14,8 @@ let browser,server;
     server=http.createServer(async(req,res)=>{
       let rel=new URL(req.url,'http://localhost').pathname.replace(/^\/lexical-access\//,'');
       if(!rel||rel.endsWith('/'))rel+='index.html';
-      if(!['index.html','real-data.js','surface-view.js','real-app.js','styles.css','site-config.js','version.json','hga/index.html','assets/favicon.svg'].includes(rel)){res.writeHead(404).end();return;}
-      try{res.setHeader('Content-Type',rel.endsWith('.js')?'text/javascript':rel.endsWith('.css')?'text/css':rel.endsWith('.json')?'application/json':rel.endsWith('.svg')?'image/svg+xml':'text/html');res.end(await fs.readFile(path.join(root,rel)));}catch{res.writeHead(500).end();}
+      if(!['index.html','real-data.js','surface-view.js','real-app.js','styles.css','site-config.js','version.json','hga/index.html','assets/favicon.svg','assets/cogan-lab.png','assets/duke-bme.png'].includes(rel)){res.writeHead(404).end();return;}
+      try{res.setHeader('Content-Type',rel.endsWith('.js')?'text/javascript':rel.endsWith('.css')?'text/css':rel.endsWith('.json')?'application/json':rel.endsWith('.png')?'image/png':rel.endsWith('.svg')?'image/svg+xml':'text/html');res.end(await fs.readFile(path.join(root,rel)));}catch{res.writeHead(500).end();}
     });
     await new Promise(r=>server.listen(0,'127.0.0.1',r));base=`http://127.0.0.1:${server.address().port}/lexical-access/`;
   }
@@ -40,8 +40,10 @@ let browser,server;
   await page.locator('[data-view=contours]').click();check('Contours preserve the task camera',(await cameras())[0]===angle);
   await page.locator('[data-view=tasks]').click();check('Returning to three tasks keeps synchronization',await synchronized()&&(await cameras())[0]===angle);
   await page.locator('[data-metric=contrast]').click();check('Changing metric preserves rotation',await synchronized()&&(await cameras())[0]===angle);
+  await page.locator('#map-settings > summary').click();
   await page.locator('[data-hemi=rh]').click();check('RH retains the shared camera',await synchronized()&&(await cameras())[0]===angle);
   await page.locator('[data-hemi=lh]').click();await page.locator('[data-metric=activation]').click();
+  await page.locator('#map-settings > summary').click();
   await page.locator('#reset-view').click();await page.waitForTimeout(60);check('Reset view restores all three lateral cameras',await synchronized()&&(await cameras())[0]==='0:0');
   await canvases.nth(1).focus();await page.keyboard.press('ArrowRight');await page.waitForTimeout(60);
   check('Keyboard rotation on task two synchronizes all tasks',await synchronized()&&(await cameras())[0]==='5:0');
