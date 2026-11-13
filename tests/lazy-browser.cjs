@@ -1,7 +1,7 @@
 // Demand boundaries, buffering, stale responses, retry, integrity and 32 Hz playback.
 const {chromium}=require('playwright');
 const fs=require('node:fs/promises'),path=require('node:path'),http=require('node:http'),assert=require('node:assert/strict');
-const out=path.resolve(process.env.SITE_POSTER_OUTPUT||'../lexical_access_site_preview/lazy-hga-v7');
+const out=path.resolve(process.env.SITE_POSTER_OUTPUT||'../lexical_access_site_preview/story-media-v8');
 const root=path.resolve(process.env.SITE_POSTER_ROOT||path.join(out,'meta/review-site'));
 let server,browser;const checks=[],errors=[];const check=(n,v)=>{assert.ok(v,n);checks.push(n);};
 (async()=>{
@@ -9,9 +9,10 @@ let server,browser;const checks=[],errors=[];const check=(n,v)=>{assert.ok(v,n);
  if(!base){server=http.createServer(async(req,res)=>{const rel=new URL(req.url,'http://localhost').pathname.replace(/^\/lexical-access\//,'')||'index.html';if(rel.includes('..')||!/^[-a-zA-Z0-9_./]+$/.test(rel)){res.writeHead(404).end();return;}try{const file=path.join(root,rel),types={'.js':'text/javascript','.html':'text/html','.css':'text/css','.gz':'application/gzip','.json':'application/json','.png':'image/png','.svg':'image/svg+xml'};res.setHeader('Content-Type',types[path.extname(file)]||'application/octet-stream');res.end(await fs.readFile(file));}catch{res.writeHead(404).end();}});await new Promise(r=>server.listen(0,'127.0.0.1',r));base=`http://127.0.0.1:${server.address().port}/lexical-access/`;}
  browser=await chromium.launch({args:['--enable-unsafe-swiftshader']});
  const context=await browser.newContext({viewport:{width:390,height:844},hasTouch:true,reducedMotion:'reduce'});
- const page=await context.newPage(),requests=[];page.on('request',r=>{if(r.url().includes('/data/'))requests.push(r.url());});page.on('pageerror',e=>errors.push(e.message));
+ const page=await context.newPage(),requests=[],mediaRequests=[];page.on('request',r=>{if(r.url().includes('/media/'))mediaRequests.push(r.url());});page.on('request',r=>{if(r.url().includes('/data/'))requests.push(r.url());});page.on('pageerror',e=>errors.push(e.message));
  const ready=async(m,time)=>page.waitForFunction(({m,time})=>{const r=document.querySelector(`[data-explorer=${m}]`),c=r.querySelector('canvas[data-time]');return c&&r.querySelector('[data-control=brain-stage]').getAttribute('aria-busy')==='false'&&(time===undefined||Number(c.dataset.time)===time);},{m,time});
  await page.goto(base+'#hga');await ready('activation',312.5);await page.waitForTimeout(400);
+ check('NFC entry does not fetch audio or decoding media',mediaRequests.length===0);
  check('Initial NFC view fetches only activation onset LH',requests.every(u=>u.includes('geometry-lh-')||u.includes('activation-onset-lh-')));
  check('Paused entry requests one time block, support and geometry',new Set(requests).size===3&&requests.length===3);
  const initialBytes=await page.evaluate(()=>performance.getEntriesByType('resource').filter(r=>r.name.includes('/data/')).reduce((n,r)=>n+r.decodedBodySize,0));

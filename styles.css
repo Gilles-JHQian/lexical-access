@@ -440,3 +440,44 @@ dialog { width:min(520px,90vw); border:1px solid var(--line); border-radius:6px;
 .brain-stage[aria-busy="true"] canvas{opacity:.35}
 
 .poster-site .hero-brain{aspect-ratio:680/430}
+
+/* Six-part poster narrative: stimulus examples and the task comparison. */
+.poster-site #question h3 { margin-top:30px; }
+.stimulus-pair { display:grid; grid-template-columns:1fr 1fr; gap:20px; margin:24px 0 14px; }
+.stimulus-example { min-width:0; padding:24px; background:white; border:1px solid var(--line); border-radius:8px; }
+.stimulus-kind { color:var(--muted); margin:0 0 4px; font-size:15px; }
+.stimulus-example h4 { font-size:28px; font-weight:500; margin:0 0 10px; letter-spacing:-.4px; overflow-wrap:anywhere; }
+.stimulus-example p { font-size:16px; }
+.stimulus-example audio { display:block; width:100%; margin-top:18px; }
+.stimulus-note { color:var(--muted); font-size:14px; }
+.research-questions,.design-rationale { display:grid; grid-template-columns:1fr 1fr; gap:28px; margin:30px 0; }
+.research-questions article,.design-rationale article { border-top:2px solid var(--blue); padding-top:20px; }
+.poster-site .research-questions h3 { margin-top:0 !important; }
+.research-questions p,.design-rationale p { font-size:16px; color:var(--muted); margin-bottom:0; }
+.design-schematic { margin:30px 0; background:#fff; border:1px solid var(--line); border-radius:8px; padding:24px; }
+.trial-head { display:grid; grid-template-columns:repeat(3,1fr); text-align:center; font-size:14px; color:var(--muted); padding:0 0 14px; border-bottom:1px solid var(--line); }
+.trial-row { padding:22px 0; border-bottom:1px solid var(--line); }
+.trial-row h3 { color:var(--task); font-size:17px; margin-bottom:14px; }
+.trial-steps { display:grid; grid-template-columns:1fr 24px 1fr 24px 1fr; align-items:center; text-align:center; gap:8px; }
+.trial-steps > div { min-width:0; }.trial-steps strong { font-size:18px; font-weight:500; }
+.trial-arrow { color:var(--task); font-size:22px; }.trial-label { display:none; }
+.spoken-stimulus { font-size:19px; font-family:Georgia,serif; }
+.response-detail { display:block; color:var(--muted); font-size:14px; }
+.design-schematic figcaption { font-size:14px; color:var(--muted); margin-top:18px; }
+.decoding-figure { margin:30px 0; }.decoding-figure img { display:block; width:100%; height:auto; background:#fff; border:1px solid var(--line); border-radius:6px; }
+.decoding-figure figcaption { font-size:15px; color:var(--muted); margin:16px 0 4px; max-width:850px; }
+.decoding-figure .text-link { font-size:16px; }
+#decoding-dialog { width:min(1200px,96vw); max-width:96vw; max-height:92dvh; padding:20px; }
+.figure-dialog-header { display:flex; justify-content:space-between; align-items:center; gap:20px; }.figure-dialog-header h2 { font-size:21px; margin:0; }
+#decoding-dialog p { font-size:14px; color:var(--muted); margin:10px 0; }
+.figure-zoom { overflow:auto; max-height:calc(92dvh - 140px); background:white; touch-action:pan-x pan-y pinch-zoom; }
+.figure-zoom img { display:block; width:max(100%,1100px); max-width:none; height:auto; }
+@media(max-width:620px) {
+ .stimulus-pair,.research-questions,.design-rationale { grid-template-columns:1fr; gap:18px; }
+ .stimulus-example { padding:20px; }.stimulus-example h4 { font-size:26px; }
+ .design-schematic { padding:16px; }.trial-head { display:none; }.trial-row:first-of-type { padding-top:0; }
+ .trial-steps { grid-template-columns:1fr 12px 1fr 12px 1fr; gap:3px; }
+ .trial-steps strong,.spoken-stimulus { font-size:16px; }.trial-arrow { font-size:18px; }
+ .trial-label { display:block; font-size:12px; color:var(--muted); margin-bottom:8px; }.response-detail { font-size:13px; margin-top:4px; }
+ #decoding-dialog { padding:12px; }.figure-dialog-header h2 { font-size:19px; }
+}

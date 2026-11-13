@@ -17,7 +17,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - uses: actions/configure-pages@v5
-      - name: Download reviewed aggregate data release
+      - name: Download reviewed HGA and presentation media releases
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -25,9 +25,10 @@ jobs:
           import json, os, pathlib, subprocess
           c = json.loads(pathlib.Path('deployment.json').read_text())
           subprocess.run(['gh', 'release', 'download', c['data_release'], '--repo', c['repository'], '--pattern', c['data_asset'], '--dir', os.environ['RUNNER_TEMP'] + '/hga-data'], check=True)
+          subprocess.run(['gh', 'release', 'download', c['media_release'], '--repo', c['repository'], '--pattern', c['media_asset'], '--dir', os.environ['RUNNER_TEMP'] + '/story-media'], check=True)
           PYCODE
       - name: Build static site and verify data checksum
-        run: python3 scripts/build_public_site.py --bundle "$RUNNER_TEMP/hga-data/real-data.js" --output _site
+        run: python3 scripts/build_public_site.py --bundle "$RUNNER_TEMP/hga-data/real-data.js" --media "$RUNNER_TEMP/story-media/story-media.zip" --output _site
       - uses: actions/upload-pages-artifact@v4
         with:
           path: _site

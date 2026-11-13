@@ -232,7 +232,6 @@
     control('reset-view').addEventListener('click', () => setCamera(0,0));
     control('play').addEventListener('click', () => {if(state.playing){pause();renderMaps();}else start();});
     control('speed').addEventListener('change', e => state.speed = Number(e.target.value));
-    control('copy-view').addEventListener('click', () => share('current', controller));
     chapter.addEventListener('toggle', () => { if (!chapter.open) { pause(); releaseMaps(); } else renderMaps(); });
     document.addEventListener('visibilitychange', () => { if (document.hidden) { pause(); releaseMaps(); } else renderMaps(); });
     motion.addEventListener('change', () => { if (motion.matches) pause(); });
@@ -332,7 +331,23 @@
   $('#toggle-chapters').addEventListener('click', () => { const open = !chapters.every(c => c.open); chapters.forEach(c => c.open = open); sync(); });
   window.addEventListener('hashchange', applyHash);
   $$('a[href^="#"]').forEach(a => a.addEventListener('click', () => { if (a.getAttribute('href') === location.hash) applyHash(); }));
-  $('#copy-story').addEventListener('click', () => share('story'));
-  $('#copy-session').addEventListener('click', () => share('session'));
+  // Native audio remains available without JS; do not overlap the two examples.
+  const examples = $$('.stimulus-example audio');
+  examples.forEach(audio => audio.addEventListener('play', () => {
+    examples.filter(other => other !== audio).forEach(other => other.pause());
+    controllers.forEach(controller => controller.pause());
+  }));
+  $('#question').addEventListener('toggle', event => {
+    if (!event.currentTarget.open) examples.forEach(audio => audio.pause());
+  });
+  document.addEventListener('visibilitychange', () => { if (document.hidden) examples.forEach(audio => audio.pause()); });
+  const figureDialog = $('#decoding-dialog');
+  $$('.decoding-open').forEach(link => link.addEventListener('click', event => {
+    if (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey || !figureDialog.showModal) return;
+    event.preventDefault();
+    const img = figureDialog.querySelector('img');
+    if (!img.hasAttribute('src')) img.src = img.dataset.src;
+    figureDialog.showModal();
+  }));
   sync(); if (location.hash) requestAnimationFrame(applyHash);
 }());
