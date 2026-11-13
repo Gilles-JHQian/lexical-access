@@ -14,9 +14,9 @@ const checks=[],errors=[],check=(name,value)=>{assert.ok(value,name);checks.push
  const ready=async(mode,time=500)=>page.waitForFunction(({mode,time})=>{const root=document.querySelector('#contrast-explorer'),canvas=root.querySelector('canvas[data-time]');return canvas&&root.querySelector('[data-control=brain-stage]').getAttribute('aria-busy')==='false'&&canvas.dataset.processing===mode&&Number(canvas.dataset.time)===time;},{mode,time});
  const dev=async()=>{if(await page.locator('#developer-panel').isHidden())await page.locator('#developer-toggle').click();await choose(page.locator('#developer-target'),'contrast');};
  const close=async()=>{if(await page.locator('#developer-panel').isVisible())await page.locator('#developer-close').click();};
- await page.goto(base+'#contrast?view=contours&t=500');await ready('original');
- check('Original is the default comparison',await choiceValue(option)==='original');
- check('Entry loads no alternative fields',requests.length===3&&requests.every(u=>u.includes('geometry-lh-')||u.includes('contrast-onset-nwwd-lh-')));
+ await page.goto(base+'#contrast?view=contours&t=500');await ready('smooth');
+ check('Gaussian smoothing is the default comparison',await choiceValue(option)==='smooth');
+ check('Entry loads only default smoothed fields',requests.length===3&&requests.every(u=>u.includes('geometry-lh-')||u.includes('contrast-onset-nwwd-smooth-lh-')));
  await c.locator('canvas').focus();await page.keyboard.press('ArrowRight');await page.waitForFunction(()=>document.querySelector('#contrast-explorer canvas').dataset.camera==='5:0');const angle=await c.locator('canvas').getAttribute('data-camera');
  const signatures={};
  for(const mode of ['original','smooth','cluster']){
@@ -51,7 +51,7 @@ const checks=[],errors=[],check=(name,value)=>{assert.ok(value,name);checks.push
   if(width===390)await page.screenshot({path:path.join(out,'figs',prefix+'contrast-developer-options.png')});await close();
  }
  // A delayed request for the old mode cannot replace the newest selection.
- await page.setViewportSize({width:390,height:844});await page.goto('about:blank');await page.goto(base+'#contrast?view=contours&t=500');await ready('original');
+ await page.setViewportSize({width:390,height:844});await page.goto('about:blank');await page.goto(base+'#contrast?view=contours&processing=original&t=500');await ready('original');
  let delayed=0;await page.route('**/contrast-onset-nwwd-smooth-lh-*.bin.gz',async route=>{delayed++;await new Promise(r=>setTimeout(r,300));await route.continue();});
  await dev();await choose(option,'smooth');await choose(option,'cluster');await close();await ready('cluster');await page.waitForTimeout(400);
  check('Late smoothing response never replaces cluster mode',await c.locator('canvas').getAttribute('data-processing')==='cluster'&&delayed>0);await page.unrouteAll({behavior:'wait'});

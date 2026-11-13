@@ -9,7 +9,7 @@
   const controllers = [];
   const renderStyle = {...window.LexicalSurfaceView.defaults};
   let developerPanel = null;
-  const defaults = {view:'tasks', align:'onset', direction:'nwwd', hemi:'lh', scope:'all', roi:'all', processing:'original', index:35, speed:0.25};
+  const defaults = {view:'tasks', align:'onset', direction:'nwwd', hemi:'lh', scope:'all', roi:'all', processing:'original', index:35, speed:0.5};
   const ms = t => `${t > 0 ? '+' : t < 0 ? '−' : ''}${Math.abs(Math.round(t))} ms`;
 
   const selectedChoice = group => group.querySelector('button[data-choice][aria-pressed="true"]');
@@ -47,7 +47,8 @@
     const developerControls = root.querySelector('.developer-controls');
     const control = name => root.querySelector(`[data-control="${name}"]`) || developerControls.querySelector(`[data-control="${name}"]`);
     const all = selector => [...new Set([...root.querySelectorAll(selector), ...developerControls.querySelectorAll(selector)])];
-    const state = {...defaults, playing:false}, camera = {yaw:0, pitch:0};
+    const initial = {...defaults, processing:metric === 'contrast' ? 'smooth' : 'original'};
+    const state = {...initial, playing:false}, camera = {yaw:0, pitch:0};
     const cell = () => bundle.cells[metric === 'activation' ? `activation-${state.align}` : `contrast-${state.align}-${state.direction}${state.processing==='original'?'':'-'+state.processing}`];
     let surfaces = [], geometryKey = '', visible = false, raf = null, last = null, cameraRaf = null;
     let requested = '', failed = '', waitingIndex = null;
@@ -211,7 +212,7 @@
     function nearest(t) { return cell().times.reduce((best,time,i) => Math.abs(time - t) < Math.abs(cell().times[best] - t) ? i : best, 0); }
     function resetEvent() { pause(); state.index = nearest(0); render(); }
     function restore(params) {
-      pause(); Object.assign(state, defaults); camera.yaw = 0; camera.pitch = 0;
+      pause(); Object.assign(state, initial); camera.yaw = 0; camera.pitch = 0;
       const allowed = {view:['tasks','contours'], align:['onset','offset'], direction:['nwwd','wdnw'], hemi:['lh','rh'], scope:['all','active','none'], processing:metric==='contrast'?['original','smooth','cluster']:['original'], roi:Object.keys(bundle.roiLabels)};
       for (const [key, choices] of Object.entries(allowed)) if (choices.includes(params.get(key))) state[key] = params.get(key);
       const number = (key, fallback) => params.has(key) && Number.isFinite(Number(params.get(key))) ? Number(params.get(key)) : fallback;
