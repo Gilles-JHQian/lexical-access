@@ -5,7 +5,6 @@
   if (!bundle || bundle.kind !== 'real') throw new Error('The real HGA bundle is missing.');
   const dataLoader = new window.LexicalDataLoader(bundle);
   const motion = matchMedia('(prefers-reduced-motion: reduce)');
-  const compact = matchMedia('(max-width:620px)');
   const controllers = [];
   const renderStyle = {...window.LexicalSurfaceView.defaults};
   let developerPanel = null;
@@ -223,8 +222,6 @@
     }
     const controller = {metric, root, chapter, pause, restore, developerControls, refresh:render, hash:() => (metric === 'activation' ? 'hga?' : 'contrast?') + new URLSearchParams({view:state.view, align:state.align, direction:state.direction, hemi:state.hemi, scope:state.scope, roi:state.roi, ...(metric==='contrast'?{processing:state.processing}:{}), t:String(cell().times[state.index]), yaw:camera.yaw.toFixed(1), pitch:camera.pitch.toFixed(1), fill:String(renderStyle.fillOpacity), line:String(renderStyle.lineWidth), brain:String(renderStyle.brightness), fold:String(renderStyle.curvature), overlap:renderStyle.overlap, smooth:String(renderStyle.smoothing)})};
 
-    const settings = () => control('settings').open = !compact.matches;
-    settings(); compact.addEventListener('change', settings);
     for (const key of ['view','hemi']) all(`[data-${key}]`).forEach(b => b.addEventListener('click', () => { pause(); state[key] = b.dataset[key]; render(); }));
     onChoice(control('alignment'), value => { state.align = value; resetEvent(); });
     onChoice(control('direction'), value => { pause(); state.direction = value; render(); });
@@ -260,10 +257,23 @@
       for(const [key] of ranges){$(`[data-style="${key}"]`).value=renderStyle[key];$(`[data-style-output="${key}"]`).textContent=key==='lineWidth'?`${renderStyle[key].toFixed(2)} px`:key==='smoothing'?`${renderStyle[key].toFixed(1)} mm`:`${Math.round(renderStyle[key]*100)}%`;}
       setChoice($('[data-style=overlap]'), renderStyle.overlap);
     }
+    function placeLauncher(){
+      if(toggle.hidden)return;
+      const height=toggle.offsetHeight||44;let bottom=16;
+      for(const c of controllers){
+        if(!c.chapter.open)continue;
+        const r=c.root.querySelector('.transport').getBoundingClientRect();
+        if(r.bottom>innerHeight-bottom-height&&r.top<innerHeight-bottom)bottom=Math.max(bottom,innerHeight-r.top+8);
+      }
+      toggle.style.bottom=`max(${Math.min(bottom,innerHeight-height-8)}px, env(safe-area-inset-bottom))`;
+    }
+    window.addEventListener('scroll',placeLauncher,{passive:true});
+    window.addEventListener('resize',placeLauncher);
+    document.addEventListener('toggle',placeLauncher,true);
     function select(controller){
       if(!controller)return;active=controller;setChoice(target, controller.metric);
       for(const c of controllers)c.developerControls.hidden=c!==controller;
-      $('#developer-section-name').textContent=controller.metric==='activation'?'HGA activation':'HGA contrast';
+      $('#developer-section-name').textContent=controller.metric==='activation'?'HGA activation':'HGA contrast';placeLauncher();
     }
     function close(){panel.hidden=true;toggle.setAttribute('aria-expanded','false');toggle.focus({preventScroll:true});}
     toggle.addEventListener('click',()=>{panel.hidden=!panel.hidden;toggle.setAttribute('aria-expanded',String(!panel.hidden));if(!panel.hidden){clamp();selectedChoice(target).focus({preventScroll:true});}});

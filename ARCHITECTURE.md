@@ -3,7 +3,7 @@
 Buildless HTML/CSS/JavaScript, served from repository root. No production dependencies, CDN, analytics or backend. The real explorer fetches same-origin aggregate blocks as needed. Relative asset URLs support GitHub Pages project subpaths and opening index.html from disk.
 
 - poster.html owns the public, final-PPTX narrative. scripts/site_template.py inserts activation and contrast controls. index.html remains the original synthetic fixture. Both stories exist before JavaScript runs.
-- styles.css owns mobile-first interaction behavior and responsive layouts. Three maps stack vertically below 620px so all tasks remain available without a carousel. Controls have native keyboard behavior; animation starts only after a click.
+- styles.css owns mobile-first interaction behavior and responsive layouts. The public explorers keep three task maps in one horizontal row at all viewport widths; the original synthetic fixture retains its stacked phone layout. Controls have native keyboard behavior; animation starts only after a click.
 - mock-data.js exposes LexicalData: kind, version, tasks, regions, timeline, displayThreshold, fields(taskId, absoluteTimeMs, metric), signal(taskId, roi, absoluteTimeMs, metric), provenance.
 - app.js owns state, the schematic SVG maps, contour intersections, traces, playback, hash navigation and sharing. Curves rebuild on mode/ROI changes; frame rendering updates maps/cursor at at most 30 fps.
 - tests/browser.cjs serves only public files through an ephemeral loopback HTTP server and checks layouts, navigation and interactions. Test artifacts go outside this code repository.
@@ -158,3 +158,9 @@ Demand loading keeps eight frames per block, two forward blocks during playback,
 ## Half-speed and Gaussian defaults · 2026-11-13
 
 Both explorers initialize and restore at 0.5×. Contrast has its own initial processing state, Smoothed (Gaussian σ 50 ms); Activation stays Original. Explicit processing parameters continue to override the Contrast default. The template selection and runtime defaults agree. Existing 64 Hz aggregate resources, rendering, demand loading and release pins are unchanged.
+
+## Horizontal tasks and expanded map settings · 2026-11-13
+
+The public task view uses three equal columns at phone and desktop widths, with captions above aspect-preserving canvases. The template’s open map-settings disclosure is no longer overridden on mobile or resize. Its summary stays accessible at all widths so manual collapse/reopen works across breakpoints. Alignment, direction and hemisphere buttons are compact 36 px controls by user request; playback controls retain their existing touch dimensions. Styles are scoped to the public poster; scientific rendering and the synthetic fixture remain unchanged.
+
+The developer launcher rests near the viewport bottom and moves above an overlapping playback transport as the page scrolls or disclosures resize. The floating panel remains draggable. This prevents the shorter task layout from placing the launcher over the speed dropdown.

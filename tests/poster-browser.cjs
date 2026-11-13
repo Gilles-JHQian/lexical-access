@@ -50,7 +50,7 @@ let browser,server;
  check('Every ID is unique',await page.locator('[id]').evaluateAll(es=>new Set(es.map(e=>e.id)).size===es.length));
  check('Scientific interpretation remains in collapsed notes',await page.locator('.display-notes').evaluateAll(es=>es.length===2&&es.every(e=>!e.open&&e.textContent.includes('not a statistical conjunction'))));
  check('Both players start paused',await page.locator('[data-control=play]').evaluateAll(es=>es.length===2&&es.every(e=>e.getAttribute('aria-label')==='Play animation')));
- check('Mobile settings start collapsed',await page.locator('.map-settings').evaluateAll(es=>es.every(e=>!e.open)));
+ check('Map settings start expanded',await page.locator('.map-settings').evaluateAll(es=>es.every(e=>e.open)));
  await page.screenshot({path:path.join(output,'figs',prefix+'mobile-story.png')});
  for(const width of [320,375,390,430,768,1440]){
   await page.setViewportSize({width,height:900});await page.locator('#toggle-chapters').click();
@@ -58,10 +58,10 @@ let browser,server;
   if(width<620){
    await page.locator('.map-settings').evaluateAll(es=>es.forEach(e=>e.open=true));
    check(`Readable type at ${width}px`,await page.evaluate(()=>parseFloat(getComputedStyle(document.querySelector('.hero-intro')).fontSize)>=16&&parseFloat(getComputedStyle(document.querySelector('.brain-panel figcaption')).fontSize)>=14));
-   check(`44px visible player controls at ${width}px`,await page.locator('.explorer button,.explorer select').evaluateAll(es=>es.filter(e=>e.getClientRects().length).every(e=>e.getBoundingClientRect().height>=44)));
+   check(`Compact map buttons and full-size playback controls at ${width}px`,await page.locator('.explorer button,.explorer select').evaluateAll(es=>es.filter(e=>e.getClientRects().length).every(e=>{const height=e.getBoundingClientRect().height;return e.closest('.map-settings')?height>=36&&height<=40:height>=44;})));
    check(`Expanded button groups fit ${width}px`,await page.locator('.explorer .choice-buttons button').evaluateAll(es=>es.filter(e=>e.getClientRects().length).every(e=>{const r=e.getBoundingClientRect();return r.left>=0&&r.right<=innerWidth&&e.scrollWidth<=e.clientWidth;})));
-   await page.locator('.map-settings').evaluateAll(es=>es.forEach(e=>e.open=false));
   }
+  check(`Three tasks share one row at ${width}px`,await page.locator('[data-explorer] .tasks-view').evaluateAll(stages=>stages.length===2&&stages.every(stage=>{const panels=[...stage.querySelectorAll('.brain-panel')].map(e=>e.getBoundingClientRect());return panels.length===3&&panels.every((r,i)=>r.width>0&&Math.abs(r.top-panels[0].top)<1&&r.left>=0&&r.right<=innerWidth&&(!i||r.left>=panels[i-1].right));})));
   await page.locator('#toggle-chapters').click();check(`All chapters collapse at ${width}px`,await page.locator('.chapter[open]').count()===0);
   await page.locator('.nav-explore').click();await page.waitForFunction(()=>document.querySelector('#hga').open);
  }
@@ -83,15 +83,16 @@ let browser,server;
  const angle=(await camera('activation'))[0];
  await setView('activation','contours');await page.waitForTimeout(100);check('Contour retains activation camera',(await camera('activation'))[0]===angle&&await canvases('activation').count()===1);
  await openDev('activation');for(const scope of ['none','active','all']){await choose(control('activation','scope'),scope);check('Overlap scope '+scope,await choiceValue(control('activation','scope'))===scope);}
- await closeDev();await setView('activation','tasks');await control('activation','settings').locator('summary').click();
+ await closeDev();await setView('activation','tasks');
  await choose(control('activation','alignment'),'offset');check('Offset uses own time zero and native support',await control('activation','time-output').textContent()==='0 ms'&&await control('activation','time').getAttribute('max')==='64');
  await explorer('activation').locator('[data-hemi=rh]').click();await ready('activation');check('Hemisphere and alignment preserve rotation',await synced('activation')&&(await camera('activation'))[0]===angle);
  check('RH uses the restored face count',await canvases('activation').evaluateAll(cs=>cs.length===3&&cs.every(c=>Number(c.dataset.faces)===21384)));
  check('RH source counts remain correct',(await control('activation','counts-note').textContent()).includes('Repetition 221'));
- await control('activation','settings').locator('summary').click();await navigate('#contrast');
+ await control('activation','settings').locator('summary').click();
+ await page.setViewportSize({width:768,height:844});check('Manual settings collapse survives resize',await control('activation','settings').getAttribute('open')===null);await control('activation','settings').locator('summary').click();check('Settings reopen on desktop',await control('activation','settings').getAttribute('open')!==null);await page.setViewportSize({width:390,height:844});await navigate('#contrast');
  check('Contrast starts with its own three maps and lateral camera',await synced('contrast')&&(await camera('contrast'))[0]==='0:0');
  check('Contrast keeps independent onset support',await control('contrast','time').getAttribute('max')==='96'&&await choiceValue(control('contrast','alignment'))==='onset');
- await control('contrast','settings').locator('summary').click();await choose(control('contrast','direction'),'wdnw');await ready('contrast');
+ await choose(control('contrast','direction'),'wdnw');await ready('contrast');
  check('Dynamic contrasts retain PW minus W sign',(await explorer('contrast').locator('.display-notes').textContent()).includes('signed pseudoword minus word'));
  check('Dynamic sections contain no static traces or ROI selectors',await page.locator('[data-explorer] .trace,[data-explorer] .roi-controls').count()===0);
  await control('contrast','settings').locator('summary').click();await navigate('#hga');
@@ -125,7 +126,12 @@ let browser,server;
  check('NFC entrance still opens activation',await control('activation','play').getAttribute('aria-label')==='Play animation'&&await synced('activation'));
  check('Published data release unchanged',(await (await context.request.get(base+'version.json')).json()).data_sha256===config.data_sha256);
  await page.screenshot({path:path.join(output,'figs',prefix+'mobile-activation.png')});
- await navigate('#contrast');await page.screenshot({path:path.join(output,'figs',prefix+'mobile-contrast.png')});
+ for(const [width,height] of [[320,667],[390,844]]){
+  await page.setViewportSize({width,height});await navigate('#contrast');
+  check(`Developer launcher clears playback at ${width}×${height}`,await page.evaluate(()=>{const a=document.querySelector('#developer-toggle').getBoundingClientRect();return [...document.querySelectorAll('.transport')].every(e=>{const b=e.getBoundingClientRect();return a.bottom<=b.top||a.top>=b.bottom||a.right<=b.left||a.left>=b.right;});}));
+  check(`Task captions fit at ${width}px`,await canvases('contrast').evaluateAll(es=>es.every(e=>{const caption=e.previousElementSibling;return caption.scrollWidth<=caption.clientWidth;})));
+  await page.screenshot({path:path.join(output,'figs',prefix+(width===320?'mobile-contrast-320.png':'mobile-contrast.png'))});
+ }
  await navigate('#contrast?view=contours&t=500');
  check('Contours use extracted mesh lines',await canvases('contrast').first().evaluate(c=>Number(c.dataset.segments)>100));
  check('Tweak controls are absent from main explorers',await page.locator('.explorer [data-view],.explorer [data-control=scope]').count()===0);

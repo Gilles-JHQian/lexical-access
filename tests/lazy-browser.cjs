@@ -53,7 +53,8 @@ let server,browser;const checks=[],errors=[];const check=(n,v)=>{assert.ok(v,n);
  for(const rate of [0.25,0.5,1]){
   await time.fill('0');await time.dispatchEvent('input');await ready('activation',-250);await speed.selectOption(String(rate));
   await page.evaluate(()=>window.frameAudit=[]);
-  await a.locator('[data-control=play]').click();await page.waitForTimeout(1100);await a.locator('[data-control=play]').click();
+  // Measure inside the warmed one-second range, without Playwright click latency at the end.
+  await page.evaluate(async()=>{const play=document.querySelector('#activation-explorer [data-control=play]');play.click();await new Promise(resolve=>setTimeout(resolve,700));if(play.getAttribute('aria-label')==='Pause animation')play.click();});
   const frames=await page.evaluate(()=>window.frameAudit),elapsed=frames.at(-1).at-frames[0].at,advance=frames.at(-1).time-frames[0].time;
   check('Playback follows wall time at '+rate+'x',Math.abs(advance-elapsed*rate)<Math.max(50,100*rate)&&await speed.inputValue()===String(rate));
   // Software rendering may skip frames at 1×; odd sample indices prove the added 64 Hz samples are displayed.
