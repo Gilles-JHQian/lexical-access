@@ -11,26 +11,26 @@ Keep the repository name and these entrances stable across releases. Updating co
 
 ## Publication contract
 
-Source code is pushed to the independent website repository. Generated `real-data.js` is uploaded as the GitHub Release asset named in `deployment.json`, with a pinned SHA-256. It is never committed to source Git. Source audits with local paths, figure caches and screenshots are not included in the published site.
+Source code is pushed to the independent website repository. Generated `real-data.js` is uploaded as the GitHub Release asset named in `deployment.json`, with a pinned SHA-256. It is never committed to source Git. The separately pinned `story-media.zip` release adds only the two requested stimulus WAVs, a decoding preview and the original poster SVG. Source audits with local paths, other figure caches and screenshots are not included in the published site.
 
-`.github/workflows/pages.yml` uses a manual `workflow_dispatch` to download that immutable data release, verify the checksum and real-data schema, build an allowlisted static site, upload a Pages artifact and deploy it. The user-requested publication runs this workflow once; later code pushes alone do not publish. Enable Pages with `build_type=workflow` (Settings → Pages → Source → GitHub Actions).
+`.github/workflows/pages.yml` uses a manual `workflow_dispatch` to download the immutable data and media releases, verify the checksum and real-data schema, build an allowlisted static site, upload a Pages artifact and deploy it. The user-requested publication runs this workflow once; later code pushes alone do not publish. Enable Pages with `build_type=workflow` (Settings → Pages → Source → GitHub Actions).
 
-The build uses only Python's standard library. No pipeline, subject data, scientific environment or raw recordings are needed on GitHub Actions. It emits 99 allowlisted files (86 compressed data blocks and 13 runtime/metadata files, including both original brand PNGs), including `/hga/index.html` and a small `version.json`, and rejects local storage paths. All ordinary assets remain relative for project subpaths. The root source `index.html` is a synthetic development fixture; only the generated Pages artifact is the real public website.
+The build uses only Python's standard library. No pipeline, subject data, scientific environment or access to source recordings are needed on GitHub Actions. It emits 103 allowlisted files (86 compressed data blocks, 13 runtime/metadata files including both original brand PNGs, and four presentation media files), including `/hga/index.html` and a small `version.json`, and rejects local storage paths. All ordinary assets remain relative for project subpaths. The root source `index.html` is a synthetic development fixture; only the generated Pages artifact is the real public website.
 
 ## Local build and validation
 
 ```bash
-python3 scripts/build_public_site.py --bundle /path/to/reviewed/real-data.js --output /path/to/empty/site
+python3 scripts/build_public_site.py --bundle /path/to/reviewed/real-data.js --media /path/to/reviewed/story-media.zip --output /path/to/empty/site
 ```
 
-The data bundle must match `deployment.json`. To run public-build browser checks, set `SITE_POSTER_ROOT` to that result (default `<output>/meta/public-site`), then run `SITE_POSTER_OUTPUT=<output> npm run test:pages`. To inspect the deployed site use `SITE_POSTER_URL=https://gilles-jhqian.github.io/lexical-access/` as well. Screenshots/reports use sibling `figs`/`meta` directories outside Git.
+The data and media bundles must match `deployment.json`. To run public-build browser checks, set `SITE_POSTER_ROOT` to that result (default `<output>/meta/public-site`), then run `SITE_POSTER_OUTPUT=<output> npm run test:pages`. To inspect the deployed site use `SITE_POSTER_URL=https://gilles-jhqian.github.io/lexical-access/` as well. Screenshots/reports use sibling `figs`/`meta` directories outside Git.
 
-Full source numerical validation is retained from the real pilot. Publication checks focus on correct artifact contents, stable copied URLs, real-mode loading, NFC redirects, mobile layout and public resource availability. Physical iOS/Android behavior is for the user's phone check.
+Full source numerical validation is retained from the real pilot. Publication checks focus on correct artifact contents, stable entrance URLs, real-mode loading, NFC redirects, mobile layout and public resource availability. Physical iOS/Android behavior is for the user's phone check.
 
 ## Release sequence
 
 1. Create the public website repository under the verified GitHub account; push validated `master` via SSH.
-2. Create the data release in `deployment.json` and upload the accepted `real-data.js` attachment. Do not replace it with different bytes under the same tag; a new bundle requires a new release and checksum.
+2. Create the data release in `deployment.json` and upload the accepted `real-data.js` attachment. Also create the media release and upload the accepted `story-media.zip`. Do not replace either with different bytes under the same tag; a new bundle requires a new release and checksum.
 3. Enable GitHub Pages with workflow publishing; run `Publish real HGA pilot` from `master`.
 4. Wait for a successful run, confirm the actual Pages URL, and run public browser/HTTP checks before giving the user NFC-ready links.
 
@@ -43,6 +43,6 @@ Workflow run: https://github.com/Gilles-JHQian/lexical-access/actions/runs/43248
 Manual publication remains the only trigger. Future pushes do not automatically replace the live website; run the workflow only when that update is authorized.
 
 
-Current streaming revision: data tag `hga-native-32hz-v4-2026-11-12`, 99-file public artifact with 32 Hz native frames. The Release asset remains the full aggregate build input; Pages serves only the small manifest and demand-loaded binary blocks. `developer_tools` in `deployment.json` controls the temporary floating launcher; set false for final presentation and republish. `?dev=1` can explicitly reopen it. Runtime script/CSS/data URLs use content-hash queries while root/NFC entrances remain unchanged. See HD_SURFACES.md for appearance controls, field preservation and first-load size.
+Current streaming revision: data tag `hga-native-32hz-v4-2026-11-12`, 103-file public artifact with 32 Hz native frames and the separate story-media release. The Release asset remains the full aggregate build input; Pages serves only the small manifest and demand-loaded binary blocks. `developer_tools` in `deployment.json` controls the temporary floating launcher; set false for final presentation and republish. `?dev=1` can explicitly reopen it. Runtime script/CSS/data URLs use content-hash queries while root/NFC entrances remain unchanged. See HD_SURFACES.md for appearance controls, field preservation and first-load size.
 
-`npm run test:loading` verifies demand boundaries, sub-1 MB initial map payload, cache reuse, stale seeks, retry, corruption rejection and buffering/1× playback. Set SITE_POSTER_ROOT and SITE_POSTER_OUTPUT as for the poster suite. Offline standalone previews intentionally embed every array; use the deployed URL for mobile loading checks.
+`npm run test:loading` verifies demand boundaries, sub-1 MB initial map payload, cache reuse, stale seeks, retry, corruption rejection and buffering/1× playback. Set SITE_POSTER_ROOT and SITE_POSTER_OUTPUT as for the poster suite. `npm run test:story` verifies audio playback, deferred media downloads, original media hashes and figure enlargement. Offline standalone previews intentionally embed every array and all presentation media; use the deployed URL for mobile loading checks.

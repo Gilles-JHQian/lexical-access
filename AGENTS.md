@@ -10,3 +10,5 @@ Read ARCHITECTURE.md before changing the explorer's data contract. The root inde
 Publication: generated real-data.js is a checksum-pinned GitHub Release asset, never tracked in source Git. Pages receives only the allowlisted build artifact. Preserve the base URL and /hga/ entrance across updates so NFC cards remain valid.
 
 Since the 32 Hz loading revision, the checksum-pinned Release remains a private-path-free aggregate schema-2 build input; the public artifact uses a small schema-3 manifest and content-addressed compressed binary blocks by condition, hemisphere and time. Preserve demand loading, integrity/retry behavior and true native frame timing. Standalone offline previews intentionally embed all data.
+
+The user’s six-section narrative revision also authorizes two original dataset stimulus audio examples and the accepted final-poster decoding figure. Publish only the explicitly selected WAVs and exact poster figure/preview through the separate checksum-pinned media Release; participant recordings and all other dataset contents remain excluded. Keep media lazy/on-demand so the NFC entrance retains its initial HGA payload.

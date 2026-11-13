@@ -1,5 +1,9 @@
 # Changelog
 
+## Six-section story, stimuli and decoding figure · 2026-11-12
+
+Introduce lexical access and its significance before the research questions, add original Altitude / Aelkahhaazh audio, and explain all three task comparisons with a responsive cue-to-response diagram. Use the exact poster result titles; include its decoding figure with on-demand mobile enlargement; rename the conclusion Take home message. Remove public share/copy controls. Media ship as a separate pinned Release, loading only when played or viewed. Preserve HGA data, native 32 Hz playback, demand loading and fixed NFC URLs.
+
 ## Native 32 Hz and demand loading · 2026-11-12
 
 Double temporal sampling from 16 to 32 real frames per second, preserving 1× playback and the lighter surface mesh. Load geometry and eight-frame blocks for the visible condition/hemisphere, cache revisited blocks, and prefetch during playback. Add buffering/retry states, checksum verification and stale-response protection. Stable full-story and NFC addresses are unchanged.

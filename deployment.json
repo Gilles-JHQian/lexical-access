@@ -4,5 +4,8 @@
   "data_release": "hga-native-32hz-v4-2026-11-12",
   "data_asset": "real-data.js",
   "data_sha256": "42dace27c539a2fce899e4298e7d5bc2c2d31a4060a59a704bafa89f5af23000",
-  "developer_tools": true
+  "developer_tools": true,
+  "media_release": "poster-story-media-v1-2026-11-12",
+  "media_asset": "story-media.zip",
+  "media_sha256": "b26d4daa788e0e6e9234f3a609352c2a2879caeca4438e0dd9d98292520d4f9d"
 }

@@ -2,7 +2,7 @@
 const {chromium}=require('playwright');
 const assert=require('node:assert/strict'),fs=require('node:fs/promises'),path=require('node:path'),http=require('node:http');
 const config=require('../deployment.json');
-const output=path.resolve(process.env.SITE_POSTER_OUTPUT||path.join(__dirname,'../../lexical_access_site_preview/lazy-hga-v7'));
+const output=path.resolve(process.env.SITE_POSTER_OUTPUT||path.join(__dirname,'../../lexical_access_site_preview/story-media-v8'));
 const checks=[],errors=[]; const check=(name,value)=>{assert.ok(value,name);checks.push(name);};
 let browser,server;
 (async()=>{
@@ -10,11 +10,11 @@ let browser,server;
  let base=process.env.SITE_POSTER_URL;
  if(!base){
   const root=process.env.SITE_POSTER_ROOT||path.join(output,'meta/public-site');
-  const allowed=['index.html','real-app.js','surface-view.js','data-loader.js','styles.css','real-data.js','site-config.js','version.json','assets/favicon.svg','assets/cogan-lab.png','assets/duke-bme.png','hga/index.html'];
+  const allowed=['index.html','real-app.js','surface-view.js','data-loader.js','styles.css','real-data.js','site-config.js','version.json','assets/favicon.svg','assets/cogan-lab.png','assets/duke-bme.png','hga/index.html','media/altitude.wav','media/aelkahhaazh.wav','media/poster-decoding.webp','media/poster-decoding.svg'];
   server=http.createServer(async(req,res)=>{
    let file=new URL(req.url,'http://localhost').pathname.replace(/^\/lexical-access\//,'');if(!file||file.endsWith('/'))file+='index.html';
    if(!allowed.includes(file)&&!/^data\/[a-z0-9-]+\.bin\.gz$/.test(file)){res.writeHead(404).end();return;}
-   try{const types={'.gz':'application/gzip','.js':'text/javascript','.css':'text/css','.json':'application/json','.png':'image/png','.svg':'image/svg+xml','.html':'text/html'};res.setHeader('Content-Type',types[path.extname(file)]);res.end(await fs.readFile(path.join(root,file)));}catch{res.writeHead(404).end();}
+   try{const types={'.wav':'audio/wav','.webp':'image/webp','.gz':'application/gzip','.js':'text/javascript','.css':'text/css','.json':'application/json','.png':'image/png','.svg':'image/svg+xml','.html':'text/html'};res.setHeader('Content-Type',types[path.extname(file)]);res.end(await fs.readFile(path.join(root,file)));}catch{res.writeHead(404).end();}
   });
   await new Promise(r=>server.listen(0,'127.0.0.1',r));base=`http://127.0.0.1:${server.address().port}/lexical-access/`;
  }
@@ -104,15 +104,13 @@ let browser,server;
  await navigate('#hga?metric=contrast&view=contours&align=offset&direction=wdnw&hemi=rh&roi=frontal&scope=active&t=250&yaw=35&pitch=-20');
  check('Legacy saved contrast links open new contrast section',await control('contrast','alignment').inputValue()==='offset'&&await control('contrast','time-output').textContent()==='+250 ms'&&await canvases('contrast').count()===1&&(await camera('contrast'))[0]==='35:-20');
  await page.evaluate(()=>Object.defineProperty(navigator,'clipboard',{value:undefined,configurable:true}));
- await control('contrast','copy-view').click();const saved=new URL(await page.locator('#share-url').inputValue());
+ await openDev('contrast');await page.locator('#developer-copy').click();const saved=new URL(await page.locator('#share-url').inputValue());
  check('Contrast sharing uses new anchor and complete state',saved.href.startsWith(config.base_url+'#contrast?')&&saved.hash.includes('yaw=35.0')&&saved.hash.includes('roi=frontal'));
- await page.getByRole('button',{name:'Done',exact:true}).click();await navigate('#hga');await control('activation','copy-view').click();
+ await page.getByRole('button',{name:'Done',exact:true}).click();await closeDev();await navigate('#hga');await openDev('activation');await page.locator('#developer-copy').click();
  check('Activation sharing retains stable anchor',(await page.locator('#share-url').inputValue()).startsWith(config.base_url+'#hga?'));
  await page.getByRole('button',{name:'Done',exact:true}).click();
- await page.locator('#references > summary').click();
- for(const [id,expected] of [['copy-story',config.base_url],['copy-session',config.base_url+'hga/']]){
-  await page.locator('#'+id).click();check(id+' keeps fixed address',await page.locator('#share-url').inputValue()===expected);await page.getByRole('button',{name:'Done',exact:true}).click();
- }
+ await closeDev();
+ check('Public copy and sharing controls removed',await page.locator('#copy-story,#copy-session,[data-control=copy-view],.share-grid').count()===0);
  await page.goto(base+'hga/');await page.waitForURL('**/#hga');await page.waitForSelector('#activation-explorer canvas[data-camera]').catch(async e=>{console.log(await page.evaluate(()=>({hash:location.hash,scrollY,errors:document.querySelectorAll('canvas[data-camera]').length,rect:document.querySelector('#activation-explorer')?.getBoundingClientRect().toJSON(),ready:document.readyState,open:document.querySelector('#hga')?.open})));console.log(errors);await page.screenshot({path:path.join(output,'figs','failure.png')});throw e;});
  check('NFC entrance still opens activation',await control('activation','play').getAttribute('aria-label')==='Play animation'&&await synced('activation'));
  check('Published data release unchanged',(await (await context.request.get(base+'version.json')).json()).data_sha256===config.data_sha256);
