@@ -12,6 +12,18 @@
   const defaults = {view:'tasks', align:'onset', direction:'nwwd', hemi:'lh', scope:'all', roi:'all', processing:'original', index:18, speed:1};
   const ms = t => `${t > 0 ? '+' : t < 0 ? '−' : ''}${Math.abs(Math.round(t))} ms`;
 
+  const selectedChoice = group => group.querySelector('button[data-choice][aria-pressed="true"]');
+  function setChoice(group, value) {
+    group?.querySelectorAll('button[data-choice]').forEach(button => button.setAttribute('aria-pressed', String(button.value === String(value))));
+  }
+  function onChoice(group, change) {
+    group?.addEventListener('click', event => {
+      const button = event.target.closest('button[data-choice]');
+      if (!button || !group.contains(button) || button.getAttribute('aria-pressed') === 'true') return;
+      setChoice(group, button.value); change(button.value);
+    });
+  }
+
   async function share(kind, controller) {
     const url = new URL(window.LexicalSiteConfig?.baseUrl || location.href);
     url.hash = ''; url.search = '';
@@ -150,12 +162,12 @@
     function render() {
       const c = cell(); state.index = Math.max(0, Math.min(c.times.length - 1, state.index));
       for (const key of ['view','hemi']) pressed(key, state[key]);
-      control('alignment').value = state.align; control('scope').value = state.scope;
-      if (control('direction')) control('direction').value = state.direction;
-      if (control('processing')) control('processing').value = state.processing;
+      setChoice(control('alignment'), state.align); setChoice(control('scope'), state.scope);
+      setChoice(control('direction'), state.direction);
+      setChoice(control('processing'), state.processing);
       control('settings-summary').textContent = `${state.hemi.toUpperCase()} · ${state.align}${metric === 'contrast' ? ' · ' + (state.direction === 'nwwd' ? 'PW > W' : 'W > PW') : ''}`;
       control('overlay-options').hidden = state.view !== 'contours';
-      control('time').max = c.times.length - 1; control('speed').value = state.speed;
+      control('time').max = c.times.length - 1; setChoice(control('speed'), state.speed);
       control('time-label').textContent = `Time from stimulus ${state.align}`;
       control('time-ticks').dataset.align = state.align;
       control('time-ticks').innerHTML = `<span>${ms(c.times[0])}</span><span class="zero-tick" style="left:${-c.times[0] / (c.times.at(-1) - c.times[0]) * 100}%">0</span><span>${ms(c.times.at(-1))}</span>`;
@@ -213,16 +225,16 @@
     const settings = () => control('settings').open = !compact.matches;
     settings(); compact.addEventListener('change', settings);
     for (const key of ['view','hemi']) all(`[data-${key}]`).forEach(b => b.addEventListener('click', () => { pause(); state[key] = b.dataset[key]; render(); }));
-    control('alignment').addEventListener('change', e => { state.align = e.target.value; resetEvent(); });
-    control('direction')?.addEventListener('change', e => { pause(); state.direction = e.target.value; render(); });
-    control('processing')?.addEventListener('change', e => { pause(); state.processing=e.target.value; render(); });
-    control('scope').addEventListener('change', e => { state.scope = e.target.value; render(); });
+    onChoice(control('alignment'), value => { state.align = value; resetEvent(); });
+    onChoice(control('direction'), value => { pause(); state.direction = value; render(); });
+    onChoice(control('processing'), value => { pause(); state.processing = value; render(); });
+    onChoice(control('scope'), value => { state.scope = value; render(); });
     control('time').addEventListener('input', e => { pause(); state.index = Number(e.target.value); renderTime(); });
     control('retry').addEventListener('click',()=>{failed='';requested='';renderMaps();});
     control('reset').addEventListener('click', resetEvent);
     control('reset-view').addEventListener('click', () => setCamera(0,0));
     control('play').addEventListener('click', () => {if(state.playing){pause();renderMaps();}else start();});
-    control('speed').addEventListener('change', e => state.speed = Number(e.target.value));
+    onChoice(control('speed'), value => { state.speed = Number(value); });
     chapter.addEventListener('toggle', () => { if (!chapter.open) { pause(); releaseMaps(); } else renderMaps(); });
     document.addEventListener('visibilitychange', () => { if (document.hidden) { pause(); releaseMaps(); } else renderMaps(); });
     motion.addEventListener('change', () => { if (motion.matches) pause(); });
@@ -242,25 +254,26 @@
     let active=controllers[0];
     for(const c of controllers){$('#developer-groups').append(c.developerControls);c.developerControls.dataset.owner=c.metric;}
     const ranges=[['brightness','Brain lightness',.8,1,.01],['curvature','Sulcal contrast',.03,.25,.01],['fillOpacity','Contour fill',0,.45,.01],['lineWidth','Contour width',.75,3,.05],['smoothing','Contour line smoothing',0,1.5,.1]];
-    $('#developer-appearance').innerHTML=ranges.map(([key,label,min,max,step])=>`<label class="developer-range">${label}<output data-style-output="${key}"></output><input type="range" data-style="${key}" aria-label="${label}" min="${min}" max="${max}" step="${step}" value="${renderStyle[key]}"></label>`).join('')+'<label class="developer-select">Overlap style<select data-style="overlap"><option value="hatch">Fine hatching</option><option value="tint">Soft blue tint</option><option value="none">Hidden</option></select></label>';
+    $('#developer-appearance').innerHTML=ranges.map(([key,label,min,max,step])=>`<label class="developer-range">${label}<output data-style-output="${key}"></output><input type="range" data-style="${key}" aria-label="${label}" min="${min}" max="${max}" step="${step}" value="${renderStyle[key]}"></label>`).join('')+'<fieldset class="choice-field" data-style="overlap"><legend>Overlap style</legend><div class="choice-buttons"><button type="button" data-choice value="hatch" aria-pressed="true">Hatching</button><button type="button" data-choice value="tint" aria-pressed="false">Blue tint</button><button type="button" data-choice value="none" aria-pressed="false">Hidden</button></div></fieldset>';
     function syncAppearance(){
       for(const [key] of ranges){$(`[data-style="${key}"]`).value=renderStyle[key];$(`[data-style-output="${key}"]`).textContent=key==='lineWidth'?`${renderStyle[key].toFixed(2)} px`:key==='smoothing'?`${renderStyle[key].toFixed(1)} mm`:`${Math.round(renderStyle[key]*100)}%`;}
-      $('[data-style=overlap]').value=renderStyle.overlap;
+      setChoice($('[data-style=overlap]'), renderStyle.overlap);
     }
     function select(controller){
-      if(!controller)return;active=controller;target.value=controller.metric;
+      if(!controller)return;active=controller;setChoice(target, controller.metric);
       for(const c of controllers)c.developerControls.hidden=c!==controller;
       $('#developer-section-name').textContent=controller.metric==='activation'?'HGA activation':'HGA contrast';
     }
     function close(){panel.hidden=true;toggle.setAttribute('aria-expanded','false');toggle.focus({preventScroll:true});}
-    toggle.addEventListener('click',()=>{panel.hidden=!panel.hidden;toggle.setAttribute('aria-expanded',String(!panel.hidden));if(!panel.hidden){clamp();target.focus({preventScroll:true});}});
+    toggle.addEventListener('click',()=>{panel.hidden=!panel.hidden;toggle.setAttribute('aria-expanded',String(!panel.hidden));if(!panel.hidden){clamp();selectedChoice(target).focus({preventScroll:true});}});
     $('#developer-close').addEventListener('click',close);
     panel.addEventListener('keydown',e=>{if(e.key==='Escape'){e.preventDefault();close();}});
-    target.addEventListener('change',()=>{const c=controllers.find(c=>c.metric===target.value);select(c);c.chapter.open=true;c.root.scrollIntoView({behavior:motion.matches?'instant':'smooth',block:'start'});});
+    onChoice(target,value=>{const c=controllers.find(c=>c.metric===value);select(c);c.chapter.open=true;c.root.scrollIntoView({behavior:motion.matches?'instant':'smooth',block:'start'});});
     $('#developer-appearance').addEventListener('input',e=>{
-      const key=e.target.dataset.style;if(!key)return;renderStyle[key]=key==='overlap'?e.target.value:Number(e.target.value);
+      const key=e.target.dataset.style;if(!key)return;renderStyle[key]=Number(e.target.value);
       syncAppearance();controllers.forEach(c=>c.refresh());
     });
+    onChoice($('[data-style=overlap]'), value => { renderStyle.overlap = value; syncAppearance(); controllers.forEach(c => c.refresh()); });
     $('#developer-copy').addEventListener('click',()=>share('current',active));
     $('#developer-reset').addEventListener('click',()=>{Object.assign(renderStyle,window.LexicalSurfaceView.defaults);syncAppearance();controllers.forEach(c=>c.refresh());});
     $('#developer-hide').addEventListener('click',()=>{
@@ -335,7 +348,7 @@
   // Static poster components have their own controls and load only when visited.
   const staticRoot = $('#contrast-results'), staticPanels = $$('.contrast-result');
   let staticVisible = false;
-  function selectedPanel() { return staticPanels.find(p => p.dataset.staticPanel === `${$('#static-alignment').value}-${$('#static-direction').value}`); }
+  function selectedPanel() { return staticPanels.find(p => p.dataset.staticPanel === `${selectedChoice($('#static-alignment')).value}-${selectedChoice($('#static-direction')).value}`); }
   async function loadStaticPanel(panel, retry = false) {
     if (!staticVisible || panel.dataset.loaded === 'true' || panel.dataset.loading === 'true') return;
     panel.dataset.loading = 'true';
@@ -355,10 +368,10 @@
   function showStaticPanel() {
     const selected = selectedPanel();
     staticPanels.forEach(panel => panel.hidden = panel !== selected);
-    $('#static-selection').textContent = `${$('#static-alignment').selectedOptions[0].text}, ${$('#static-direction').selectedOptions[0].text}. ${selected.querySelector('.poster-window').textContent}`;
+    $('#static-selection').textContent = `${selectedChoice($('#static-alignment')).textContent}, ${selectedChoice($('#static-direction')).textContent}. ${selected.querySelector('.poster-window').textContent}`;
     loadStaticPanel(selected);
   }
-  for (const id of ['static-alignment','static-direction']) $('#'+id).addEventListener('change', showStaticPanel);
+  for (const id of ['static-alignment','static-direction']) onChoice($('#'+id), showStaticPanel);
   staticPanels.forEach(panel => panel.querySelector('[data-static-retry]').addEventListener('click', () => loadStaticPanel(panel, true)));
   if ('IntersectionObserver' in window) new IntersectionObserver(entries => {
     staticVisible = entries.at(-1).isIntersecting;

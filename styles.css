@@ -31,7 +31,7 @@ button { border:0; }
 .hero { display:grid; grid-template-columns:1.05fr 1fr; gap:40px; padding-top:60px; padding-bottom:60px; align-items:center; }
 .eyebrow { font-size:10px; letter-spacing:1.7px; font-weight:700; line-height:1.6; }
 h1 { font-size:clamp(54px,6.2vw,82px); font-weight:400; letter-spacing:-4px; line-height:1.06; margin:26px 0; }
-h1 em { font-family:Georgia,'Times New Roman',serif; color:var(--blue); font-weight:400; }
+h1 em, h1 .hero-keyword { font-family:Georgia,'Times New Roman',serif; color:var(--blue); font-weight:400; }
 .hero-subtitle { font-size:23px; line-height:1.4; margin:0 0 18px; }
 .hero-intro { max-width:390px; color:var(--muted); font-size:15px; }
 .hero-actions { display:flex; gap:25px; flex-wrap:wrap; align-items:center; margin-top:28px; }
@@ -430,7 +430,7 @@ dialog { width:min(520px,90vw); border:1px solid var(--line); border-radius:6px;
 @media(max-width:620px){.developer-toggle { font-size:13px; padding:8px 12px; right:12px; bottom:max(12px,env(safe-area-inset-bottom)); }.developer-panel { right:12px; bottom:66px; max-height:65dvh; }.poster-site .explorer-bottom { padding-bottom:62px; }}
 @media print {.developer-toggle,.developer-panel { display:none; }}
 
-@media(max-width:620px){.developer-toggle { bottom:150px; }.developer-panel { bottom:204px; max-height:calc(100dvh - 230px); }}
+@media(max-width:620px){.developer-toggle { bottom:204px; }.developer-panel { bottom:258px; max-height:calc(100dvh - 284px); }}
 
 .developer-actions { display:grid; grid-template-columns:1fr 1fr; }.developer-actions #developer-copy { grid-column:1/-1; }
 
@@ -515,5 +515,43 @@ dialog { width:min(520px,90vw); border:1px solid var(--line); border-radius:6px;
 
 /* Temporal signal comparisons live in the existing developer panel. */
 .signal-options { display:grid; gap:6px; justify-content:stretch; margin-bottom:16px; }
-.signal-options select { width:100%; min-width:0; }
+
 .processing-status { margin:8px 0 12px; color:var(--muted); font-size:14px; }
+
+/* Visible alternatives use the same selected state in maps, results and tools. */
+.choice-field { min-width:0; }
+.choice-field > legend { padding:0; margin-bottom:6px; font-size:14px; color:var(--muted); }
+.choice-buttons { display:flex; flex-wrap:wrap; gap:6px; }
+.choice-buttons button { flex:1 1 0; min-width:44px; min-height:44px; padding:8px 10px; border:1px solid #b7c3ca; border-radius:6px; background:#fff; color:var(--ink); font-size:14px; line-height:1.35; }
+.choice-buttons button:hover { background:var(--soft); border-color:var(--navy); }
+.choice-buttons button[aria-pressed="true"] { background:var(--navy); border-color:var(--navy); color:#fff; }
+.choice-buttons button:focus-visible { outline:3px solid var(--blue); outline-offset:3px; }
+.map-settings-body { align-items:flex-end; flex-wrap:wrap; gap:16px 24px; padding-block:12px; }
+.map-settings-body > .choice-field { flex:0 1 300px; }
+.map-settings-body .real-options { gap:16px 24px; align-items:flex-end; padding:0; }
+.real-options .choice-field { flex:1; min-width:200px; max-width:300px; }
+.static-options { max-width:640px; }
+.developer-panel .choice-field { margin-bottom:14px; }
+.developer-panel .choice-buttons button { padding-inline:8px; }
+.developer-panel [data-control="scope"] .choice-buttons { display:grid; grid-template-columns:1fr 1fr; }
+.developer-panel [data-control="scope"] button[value="active"] { grid-column:1/-1; grid-row:2; }
+.speed-options { flex:0 0 156px; }
+.speed-options > legend { font-size:12px; }
+.speed-options .choice-buttons { flex-wrap:nowrap; gap:4px; }
+.speed-options button { padding:7px 4px; }
+@media(max-width:620px) {
+ .map-settings-body { padding-block:4px 12px; }
+ .map-settings-body > .choice-field { margin-bottom:14px; }
+ .map-settings-body .real-options { display:grid; grid-template-columns:1fr; gap:12px; }
+ .real-options .choice-field { min-width:0; max-width:none; }
+ .static-options { grid-template-columns:1fr; gap:14px; max-width:360px; }
+ .poster-site .transport { display:grid; grid-template-columns:44px minmax(0,1fr) 44px; gap:8px; }
+ .poster-site .play-button { grid-column:1; grid-row:1; }
+ .poster-site .time-control { grid-column:2; grid-row:1; }
+ .poster-site .reset-button { grid-column:3; grid-row:1; }
+ .speed-options { grid-column:1/-1; grid-row:2; display:flex; gap:12px; align-items:center; }
+ .speed-options > legend { float:left; margin:0; font-size:13px; padding-block:13px; }
+ .speed-options .choice-buttons { margin-left:auto; flex:0 1 180px; }
+}
+
+h1 .hero-keyword { font-style:normal; }
