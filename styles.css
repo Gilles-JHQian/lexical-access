@@ -535,10 +535,9 @@ dialog { width:min(520px,90vw); border:1px solid var(--line); border-radius:6px;
 .developer-panel .choice-buttons button { padding-inline:8px; }
 .developer-panel [data-control="scope"] .choice-buttons { display:grid; grid-template-columns:1fr 1fr; }
 .developer-panel [data-control="scope"] button[value="active"] { grid-column:1/-1; grid-row:2; }
-.speed-options { flex:0 0 156px; }
-.speed-options > legend { font-size:12px; }
-.speed-options .choice-buttons { flex-wrap:nowrap; gap:4px; }
-.speed-options button { padding:7px 4px; }
+.speed-options { flex:0 0 104px; font-size:12px; color:var(--muted); }
+.speed-options > span { display:block; margin-bottom:6px; }
+.speed-options select { width:100%; font-size:16px; }
 @media(max-width:620px) {
  .map-settings-body { padding-block:4px 12px; }
  .map-settings-body > .choice-field { margin-bottom:14px; }
@@ -550,8 +549,8 @@ dialog { width:min(520px,90vw); border:1px solid var(--line); border-radius:6px;
  .poster-site .time-control { grid-column:2; grid-row:1; }
  .poster-site .reset-button { grid-column:3; grid-row:1; }
  .speed-options { grid-column:1/-1; grid-row:2; display:flex; gap:12px; align-items:center; }
- .speed-options > legend { float:left; margin:0; font-size:13px; padding-block:13px; }
- .speed-options .choice-buttons { margin-left:auto; flex:0 1 180px; }
+ .speed-options > span { margin:0; font-size:13px; }
+ .speed-options select { margin-left:auto; width:104px; }
 }
 
 h1 .hero-keyword { font-style:normal; }

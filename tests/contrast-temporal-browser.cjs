@@ -21,7 +21,7 @@ const checks=[],errors=[],check=(name,value)=>{assert.ok(value,name);checks.push
  const signatures={};
  for(const mode of ['original','smooth','cluster']){
   await dev();await choose(option,mode);await close();await ready(mode);
-  check('Switch preserves time and rotation: '+mode,await c.locator('canvas').getAttribute('data-camera')===angle&&await c.locator('[data-control=time]').inputValue()==='24');
+  check('Switch preserves time and rotation: '+mode,await c.locator('canvas').getAttribute('data-camera')===angle&&await c.locator('[data-control=time]').inputValue()==='48');
   check('Processing caption is explicit: '+mode,mode==='original'?await c.locator('[data-control=processing-status]').isHidden():(await c.locator('[data-control=processing-status]').textContent()).includes(mode==='smooth'?'50 ms':'SDR1'));
   signatures[mode]=await c.locator('canvas').evaluate(e=>e.toDataURL());
   await c.locator('[data-control=brain-stage]').screenshot({path:path.join(out,'figs',prefix+'contrast-'+mode+'-500ms.png')});
@@ -29,7 +29,7 @@ const checks=[],errors=[],check=(name,value)=>{assert.ok(value,name);checks.push
  check('Both comparisons change the rendered map',signatures.smooth!==signatures.original&&signatures.cluster!==signatures.original&&signatures.smooth!==signatures.cluster);
  await c.locator('[data-control=play]').click();await page.waitForFunction(()=>Number(document.querySelector('#contrast-explorer canvas').dataset.time)>500);await c.locator('[data-control=play]').click();
  check('Masked playback advances through native frames',Number(await c.locator('canvas').getAttribute('data-time'))>500&&await c.locator('canvas').getAttribute('data-processing')==='cluster');
- await c.locator('[data-control=time]').fill('24');await c.locator('[data-control=time]').dispatchEvent('input');await ready('cluster');
+ await c.locator('[data-control=time]').fill('48');await c.locator('[data-control=time]').dispatchEvent('input');await ready('cluster');
  check('No other hemisphere or condition loaded for comparison',requests.every(u=>u.includes('geometry-lh-')||u.includes('contrast-onset-nwwd-')));
  const count=requests.length;await dev();await choose(option,'original');await close();await ready('original');check('Returning to Original reuses its blocks',requests.length===count);
  // Every direction/alignment/hemisphere supports both variants.
