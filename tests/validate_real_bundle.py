@@ -40,7 +40,7 @@ for key,c in data['cells'].items():
    assert f.shape==(len(sample),len(support)) and np.isfinite(f).all();assert not np.any(f[:,~support])
    if task=='Repeat' and key in ['activation-onset','contrast-onset-wdnw','contrast-offset-nwwd']:
     mesh=_get_surface_cache(str(a.recon),'avg35','inflated',hemi);dist,ids=cKDTree(mesh['verts']).query(decode(data['geometries'][hemi]['positions']));assert dist.max()<1e-4
-    j=len(sample)//2;field=compute_surface_field(str(a.recon),'avg35',hemi,coords[mask],v[mask][:,sample[j]],bandwidth=c['bandwidth'],max_distance=c['reach'],kernel=DensityKernel(method=c['kernel']))
+    j=len(sample)//2+1;field=compute_surface_field(str(a.recon),'avg35',hemi,coords[mask],v[mask][:,sample[j]],bandwidth=c['bandwidth'],max_distance=c['reach'],kernel=DensityKernel(method=c['kernel']))
     np.testing.assert_array_equal(support,field.support[ids]);error=float(np.max(np.abs(f[j]-field.values[ids])));assert error<=q['scale']*.501+1e-12
     spot.append(dict(cell=key,task=task,hemi=hemi,error=error,allowed=q['scale']*.501))
   checks.append(key+'/'+task+': native times, task membership, hemisphere counts, all four ROI curves, missingness and support pass')

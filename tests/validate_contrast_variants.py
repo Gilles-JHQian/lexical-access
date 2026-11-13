@@ -65,6 +65,8 @@ for key,c in base['cells'].items():
     if n.split('_')[0]!=subject:continue
     i=lookup[n];mask[row]=strict[i] & (stat[i]>0 if direction=='NwWd' else stat[i]<0) & valid[i] & (raw_names[i] in sig)
   sample=np.array(record['cells'][key][task_id]['frame_indices']);fi=int(np.argmax(mask[:,sample].sum(0)))
+  # Validate an inserted 64 Hz sample next to peak mask coverage, not an old 32 Hz frame.
+  if fi%2==0:fi=fi+1 if fi+1<len(sample) else fi-1
   for hemi in ('lh','rh'):
    rows=coords[:,0]<0 if hemi=='lh' else coords[:,0]>0
    np.testing.assert_array_equal(mask[rows][:,sample].sum(0),data['cells'][key+'-cluster']['activeCounts'][task_id][hemi])

@@ -4,7 +4,7 @@ Three choices in Developer options → Contrast signal: Original (default), Smoo
 
 ## Temporal smoothing
 
-Apply the existing shared `plotters.trace_render._smooth` primitive to each accepted source contact's complete 128 Hz HGA difference trace, before surface projection and 32 Hz frame selection. Centered Gaussian, σ=50 ms (6.4 native samples), truncate at 4σ, SciPy reflect edge handling. Visible samples have the full kernel within the original cached epoch. This is a descriptive display operation; it can spread activity around an event and is not a latency estimate or a new statistical test. No mask is applied to this comparison.
+Apply the existing shared `plotters.trace_render._smooth` primitive to each accepted source contact's complete 128 Hz HGA difference trace, before surface projection and 64 Hz frame selection. Centered Gaussian, σ=50 ms (6.4 native samples), truncate at 4σ, SciPy reflect edge handling. Visible samples have the full kernel within the original cached epoch. This is a descriptive display operation; it can spread activity around an event and is not a latency estimate or a new statistical test. No mask is applied to this comparison.
 
 ## SDR1 mask
 
@@ -25,3 +25,5 @@ Release `hga-contrast-temporal-v5-2026-11-12`; `real-data.js` SHA-256 `02c114e8c
 `tests/validate_contrast_variants.py` independently constructs native Gaussian weights, reads formal audit masks directly, and checks 48 projected variant fields within int16 quantization bounds. Export also checks 72 original fields against the accepted bundle. All 198 resources reconstruct losslessly; masked per-frame contact counts match exactly and untested frames are zero. Across the 24 task/condition/hemisphere fields, the median mean absolute frame-change ratio is 0.325 for smoothed versus original; this is a display-stability metric, not inferential evidence.
 
 Browser QA: 43 temporal-option checks, 83 poster/explorer checks and 17 loading checks. Covers all event/direction/hemisphere combinations, native playback, independent activation, 320–1440 px controls, camera/time continuity, saved links, late responses, download retry, no eager alternative data and offline use. Generated evidence lives in sibling `lexical_access_site_preview/contrast-time-v11/{figs,meta}`. Physical phone appearance remains for user review; the final preferred comparison has not been selected.
+
+The subsequent playback revision doubles native frame selection to 64 Hz (15.625 ms) for all comparisons and defaults playback to 0.25×. Gaussian parameters remain defined on the full 128 Hz source trace; significance masks are aligned at the inserted native samples. The historical 32 Hz release figures above remain provenance for that delivery. Current pins are in deployment.json.

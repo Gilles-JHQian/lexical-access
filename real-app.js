@@ -9,7 +9,7 @@
   const controllers = [];
   const renderStyle = {...window.LexicalSurfaceView.defaults};
   let developerPanel = null;
-  const defaults = {view:'tasks', align:'onset', direction:'nwwd', hemi:'lh', scope:'all', roi:'all', processing:'original', index:18, speed:1};
+  const defaults = {view:'tasks', align:'onset', direction:'nwwd', hemi:'lh', scope:'all', roi:'all', processing:'original', index:35, speed:0.25};
   const ms = t => `${t > 0 ? '+' : t < 0 ? '−' : ''}${Math.abs(Math.round(t))} ms`;
 
   const selectedChoice = group => group.querySelector('button[data-choice][aria-pressed="true"]');
@@ -167,7 +167,7 @@
       setChoice(control('processing'), state.processing);
       control('settings-summary').textContent = `${state.hemi.toUpperCase()} · ${state.align}${metric === 'contrast' ? ' · ' + (state.direction === 'nwwd' ? 'PW > W' : 'W > PW') : ''}`;
       control('overlay-options').hidden = state.view !== 'contours';
-      control('time').max = c.times.length - 1; setChoice(control('speed'), state.speed);
+      control('time').max = c.times.length - 1; control('speed').value = String(state.speed);
       control('time-label').textContent = `Time from stimulus ${state.align}`;
       control('time-ticks').dataset.align = state.align;
       control('time-ticks').innerHTML = `<span>${ms(c.times[0])}</span><span class="zero-tick" style="left:${-c.times[0] / (c.times.at(-1) - c.times[0]) * 100}%">0</span><span>${ms(c.times.at(-1))}</span>`;
@@ -234,7 +234,7 @@
     control('reset').addEventListener('click', resetEvent);
     control('reset-view').addEventListener('click', () => setCamera(0,0));
     control('play').addEventListener('click', () => {if(state.playing){pause();renderMaps();}else start();});
-    onChoice(control('speed'), value => { state.speed = Number(value); });
+    control('speed').addEventListener('change', event => { state.speed = Number(event.target.value); last = null; });
     chapter.addEventListener('toggle', () => { if (!chapter.open) { pause(); releaseMaps(); } else renderMaps(); });
     document.addEventListener('visibilitychange', () => { if (document.hidden) { pause(); releaseMaps(); } else renderMaps(); });
     motion.addEventListener('change', () => { if (motion.matches) pause(); });
