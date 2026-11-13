@@ -36,6 +36,11 @@ def build(bundle, output, media):
         asset = (output / name).read_bytes() if name == 'real-data.js' else (ROOT / name).read_bytes()
         token = hashlib.sha256(asset).hexdigest()[:12]
         html = html.replace('"./' + name + '"', '"./' + name + '?v=' + token + '"')
+    # Updated vector typography must not reuse a phone's cached poster SVG.
+    for name in sorted(media_files):
+        if name.startswith('media/contrast-') and name.endswith('.svg'):
+            token = hashlib.sha256((output / name).read_bytes()).hexdigest()[:12]
+            html = html.replace('"./' + name + '"', '"./' + name + '?v=' + token + '"')
     html = html.replace('</head>', '<link rel="canonical" href="' + config['base_url'] + '">\n<script defer src="./site-config.js"></script>\n</head>')
     (output / 'index.html').write_text(html)
     for name in ['styles.css', 'data-loader.js', 'real-app.js', 'surface-view.js', '.nojekyll']:
