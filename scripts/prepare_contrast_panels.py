@@ -2,8 +2,10 @@
 """Package accepted poster components for responsive reading, without analysis."""
 import argparse
 import base64
+import copy
 import hashlib
 import json
+import re
 from pathlib import Path
 import subprocess
 import xml.etree.ElementTree as ET
@@ -19,6 +21,18 @@ sha = lambda b: hashlib.sha256(b).hexdigest()
 def rasters(svg):
     return [sha(base64.b64decode(e.get('{http://www.w3.org/1999/xlink}href').split(',')[1]))
             for e in ET.fromstring(svg).iter() if e.tag.endswith('}image')]
+
+
+def plot_signature(group):
+    """Exact geometry/styles plus literal labels; ignore only text presentation."""
+    group = copy.deepcopy(group)
+    labels = []
+    for text in group.iter('{http://www.w3.org/2000/svg}text'):
+        labels.append(''.join(text.itertext()))
+        text.set('style', re.sub(r'font-size:\s*[\d.]+px', 'font-size: WEB', text.get('style')))
+        for attr in ('x', 'y', 'transform'):
+            text.attrib.pop(attr, None)
+    return ET.canonicalize(ET.tostring(group, encoding='unicode')), labels
 
 
 def main():
@@ -55,12 +69,12 @@ def main():
         for component in [c for c in components if c['cell'] == cell]:
             filename = 'media/'+component['file'];data = (figs/component['file']).read_bytes();payload[filename] = data
             images[component['part']] = {'src': './'+filename, 'width': component['width'], 'height': component['height']}
-            # Vector curves/pies contain the original plotted paths, text and fills.
+            # Every plotted path/fill, text value and non-text attribute stays exact.
             if component['part'] in ('trace','roi'):
                 original = next(e for e in source_root.iter() if e.get('id') == 'axes_'+str(component['axis']))
                 extracted = ET.fromstring(data)
                 copy = next(e for e in extracted.iter() if e.get('id') == original.get('id'))
-                assert ET.canonicalize(ET.tostring(original,encoding='unicode')) == ET.canonicalize(ET.tostring(copy,encoding='unicode'))
+                assert plot_signature(original) == plot_signature(copy), 'Scientific plot content changed'
                 if component['part'] == 'trace':
                     assert f'n = {n}' in ''.join(copy.itertext())
         panels.append({'id':cell,'align':align,'direction':direction,'n':n,'metric':sign+' (d′)','window':[.5,.9] if align=='stimulus' else [0,.5],'images':images})
@@ -71,7 +85,7 @@ def main():
     with zipfile.ZipFile(target,'w',compression=zipfile.ZIP_DEFLATED,compresslevel=9) as z:
         for name,data in sorted(payload.items()):
             info=zipfile.ZipInfo(name,date_time=(2026,11,12,0,0,0));info.compress_type=zipfile.ZIP_DEFLATED;z.writestr(info,data)
-    record={'source_svg':str(args.figure),'source_svg_sha256':FIGURE_SHA,'poster':str(args.poster),'poster_sha256':POSTER_SHA,'poster_part':'ppt/media/image10.svg','matched_brain_rasters':rasters(source),'unchanged_vector_axes':8,'components':components,'archive_sha256':sha(target.read_bytes()),'files':{name:{'bytes':len(data),'sha256':sha(data)} for name,data in payload.items()},'method':'Existing SVG axis groups copied unchanged; transparent/white margins cropped. Original brain rasters are identical to the final PPTX; only browser WebP preview conversion, no resampling of scientific data. Curves, SEM ribbons, selection windows and effect-weighted ROI pies retain original paths and text.'}
+    record={'source_svg':str(args.figure),'source_svg_sha256':FIGURE_SHA,'poster':str(args.poster),'poster_sha256':POSTER_SHA,'poster_part':'ppt/media/image10.svg','matched_brain_rasters':rasters(source),'unchanged_plot_geometry_and_labels':8,'typography':'Web-sized Arial text with compact label spacing; chart display capped at 360 CSS px','components':components,'archive_sha256':sha(target.read_bytes()),'files':{name:{'bytes':len(data),'sha256':sha(data)} for name,data in payload.items()},'method':'Existing SVG axes reflowed for web reading; only SVG text typography/placement and outer margins change. Original brain rasters are identical to the final PPTX; only browser WebP preview conversion, no resampling of scientific data. Eight curve/pie groups pass canonical-XML equality after excluding text presentation attributes; all plotted paths, SEM ribbons, selection windows, effect-weighted pie wedges, colors and literal labels remain unchanged.'}
     (meta/'contrast-panel-provenance.json').write_text(json.dumps(record,indent=2)+'\n')
     for component in components:
         stem = Path(component['file']).stem

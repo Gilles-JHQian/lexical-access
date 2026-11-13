@@ -13,7 +13,7 @@ const checks=[],errors=[],check=(n,v)=>{assert.ok(v,n);checks.push(n);};let serv
  check('NFC entrance requests no static media',requests.length===0);
  check('Activation contains only its dynamic explorer',await page.locator('#hga .trace,#hga .roi-controls,#hga .contrast-static').count()===0);
  check('Static contrast is separate from its player',await page.locator('#contrast .contrast-static').count()===1&&await page.locator('#contrast-explorer .contrast-static,#contrast-explorer .trace').count()===0);
- let failed=false;await page.route('**/contrast-offset-wdnw-roi.svg',async route=>{if(!failed){failed=true;await route.fulfill({status:503,body:'temporary'});}else await route.continue();});
+ let failed=false;await page.route('**/contrast-offset-wdnw-roi.svg*',async route=>{if(!failed){failed=true;await route.fulfill({status:503,body:'temporary'});}else await route.continue();});
  await page.evaluate(()=>location.hash='#contrast-results');
  const ready=async key=>page.waitForFunction(key=>{const e=document.querySelector(`[data-static-panel="${key}"]`);return !e.hidden&&e.dataset.loaded==='true';},key);
  await ready('stimulus-nwwd');

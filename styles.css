@@ -493,6 +493,7 @@ dialog { width:min(520px,90vw); border:1px solid var(--line); border-radius:6px;
 .contrast-result figure { margin:0; min-width:0; }.contrast-result img { width:100%; height:auto; display:block; border-radius:5px; background:#fff; }
 .contrast-result img:not([src]) { visibility:hidden; }.contrast-result .figure-open { display:block; }
 .poster-brains figcaption { font-size:14px; color:var(--muted); text-align:center; margin-top:8px; }
+.poster-charts figure { width: 100%; max-width: 360px; justify-self: center; }
 .poster-charts figcaption { font-size:16px; margin:0 0 14px; }.component-note { color:var(--muted); font-size:14px; margin:10px 0 0; }
 .static-load-status { display:flex; align-items:center; gap:16px; font-size:14px; padding:12px; background:var(--soft); }.static-load-status button { min-height:44px; padding:8px 16px; }
 .static-notes { margin-top:24px; }
