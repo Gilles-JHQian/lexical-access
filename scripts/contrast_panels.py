@@ -1,6 +1,7 @@
 """Responsive presentation of the four accepted poster contrast result sets."""
 from html import escape
 import json
+from choice_controls import choice_group
 
 CELLS = ('stimulus-nwwd', 'stimulus-wdnw', 'offset-nwwd', 'offset-wdnw')
 PARTS = ('lh', 'rh', 'trace', 'roi')
@@ -31,10 +32,11 @@ def contrast_results_html(media_root):
           <p class="static-load-status" role="status" hidden><span></span><button type="button" data-static-retry hidden>Retry</button></p>
           <noscript><p>Open the original components: {' · '.join(f'<a href="{escape(panel["images"][part]["src"])}">{label}</a>' for part,label in [('lh','Left brain'),('rh','Right brain'),('trace','Time course'),('roi','Regional contribution')])}.</p></noscript>
         </article>''')
-    return '''<section class="contrast-static" id="contrast-results" aria-labelledby="contrast-results-title">
+    choices = choice_group('Alignment', [('stimulus', 'Stimulus'), ('offset', 'Offset')], attrs='id="static-alignment"') + choice_group('Effect', [('nwwd', 'PW > W'), ('wdnw', 'W > PW')], attrs='id="static-direction"')
+    return f'''<section class="contrast-static" id="contrast-results" aria-labelledby="contrast-results-title">
       <h3 id="contrast-results-title">Poster results</h3>
       <p>Compare lexicality effects during the stimulus and after it ends.</p>
-      <div class="static-options"><label>Alignment<select id="static-alignment"><option value="stimulus">Stimulus</option><option value="offset">Offset</option></select></label><label>Effect<select id="static-direction"><option value="nwwd">PW &gt; W</option><option value="wdnw">W &gt; PW</option></select></label></div>
+      <div class="static-options">{choices}</div>
       <div class="poster-task-key" aria-label="Task colors"><span class="task repeat">Repetition</span><span class="task decision">Decision</span><span class="task passive">Passive</span></div>
       <p id="static-selection" class="sr-only" role="status"></p>
       ''' + '\n'.join(sections) + '''

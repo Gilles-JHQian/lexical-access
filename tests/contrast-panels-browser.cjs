@@ -1,3 +1,4 @@
+const {choose,choiceValue}=require('./choice-controls.cjs');
 // Independent static selections, original components, deferred loading and usable zoom.
 const {chromium}=require('playwright');
 const fs=require('node:fs/promises'),path=require('node:path'),http=require('node:http'),assert=require('node:assert/strict'),crypto=require('node:crypto');
@@ -20,22 +21,22 @@ const checks=[],errors=[],check=(n,v)=>{assert.ok(v,n);checks.push(n);};let serv
  check('First visit requests only four selected components',requests.length===4&&requests.every(u=>u.includes('contrast-stimulus-nwwd-')));
  const cases=[['stimulus','nwwd','0.5–0.9 s after stimulus onset'],['stimulus','wdnw','0.5–0.9 s after stimulus onset'],['offset','nwwd','0–0.5 s after stimulus offset'],['offset','wdnw','0–0.5 s after stimulus offset']];
  for(const [align,direction,window] of cases){
-  await page.locator('#static-alignment').selectOption(align);await page.locator('#static-direction').selectOption(direction);const key=`${align}-${direction}`;
+  await choose(page.locator('#static-alignment'),align);await choose(page.locator('#static-direction'),direction);const key=`${align}-${direction}`;
   if(key==='offset-wdnw'){await page.locator(`[data-static-panel="${key}"] [data-static-retry]`).waitFor({state:'visible'});check('Failed static figure offers retry',failed);await page.locator(`[data-static-panel="${key}"] [data-static-retry]`).click();}
   await ready(key);const panel=page.locator(`[data-static-panel="${key}"]`);
   check('Exactly one result set selected: '+key,await page.locator('.contrast-result:not([hidden])').count()===1);
   check('Correct original components: '+key,await panel.locator('img').evaluateAll((es,key)=>es.length===4&&es.every(e=>e.src.includes(`contrast-${key}-`)&&e.complete&&e.naturalWidth>0),key));
   check('Correct poster window: '+key,(await panel.locator('.poster-window').textContent()).includes(window));
  }
- check('Static choices leave animation settings alone',await page.locator('#contrast-explorer [data-control=alignment]').inputValue()==='onset'&&await page.locator('#contrast-explorer [data-control=direction]').inputValue()==='nwwd');
- const count=requests.length;await page.locator('#static-alignment').selectOption('stimulus');await page.locator('#static-direction').selectOption('nwwd');await ready('stimulus-nwwd');
+ check('Static choices leave animation settings alone',await choiceValue(page.locator('#contrast-explorer [data-control=alignment]'))==='onset'&&await choiceValue(page.locator('#contrast-explorer [data-control=direction]'))==='nwwd');
+ const count=requests.length;await choose(page.locator('#static-alignment'),'stimulus');await choose(page.locator('#static-direction'),'nwwd');await ready('stimulus-nwwd');
  check('Revisiting a result reuses loaded components',requests.length===count);
  check('Pie semantics are effect contributions, not counts',(await page.locator('.static-notes').textContent()).includes('not percentages of electrodes'));
  const prefix=process.env.SITE_POSTER_URL?'published-':'';
  for(const width of [320,390,768,1440]){
   await page.setViewportSize({width,height:900});await page.locator('#contrast-results').scrollIntoViewIfNeeded();
   check('Static components fit '+width,await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
-  check('Selectors are touch sized at '+width,await page.locator('.static-options select').evaluateAll(es=>es.every(e=>e.getBoundingClientRect().height>=44)));
+  check('Selectors are touch sized at '+width,await page.locator('.static-options button').evaluateAll(es=>es.every(e=>e.getBoundingClientRect().height>=44)));
   if(width<620)check('Charts stack on phones at '+width,await page.locator('.contrast-result:not([hidden]) .poster-charts').evaluate(e=>getComputedStyle(e).gridTemplateColumns.split(' ').length===1));
   await page.locator('#contrast-results').screenshot({style:'.skip-link:not(:focus),.developer-toggle{visibility:hidden}',path:path.join(out,'figs',`${prefix}contrast-static-${width}.png`)});
  }

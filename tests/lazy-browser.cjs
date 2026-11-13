@@ -1,3 +1,4 @@
+const {choiceValue}=require('./choice-controls.cjs');
 // Demand boundaries, buffering, stale responses, retry, integrity and 32 Hz playback.
 const {chromium}=require('playwright');
 const fs=require('node:fs/promises'),path=require('node:path'),http=require('node:http'),assert=require('node:assert/strict');
@@ -50,7 +51,7 @@ let server,browser;const checks=[],errors=[];const check=(n,v)=>{assert.ok(v,n);
  await page.evaluate(()=>{window.frameAudit=[];const c=document.querySelector('#activation-explorer canvas');new MutationObserver(()=>{const t=Number(c.dataset.time),last=window.frameAudit.at(-1);if(!last||last.time!==t)window.frameAudit.push({time:t,at:performance.now()});}).observe(c,{attributes:true,attributeFilter:['data-time']});});
  await a.locator('[data-control=play]').click();await page.waitForTimeout(1050);await a.locator('[data-control=play]').click();
  const frames=await page.evaluate(()=>window.frameAudit),elapsed=frames.at(-1).at-frames[0].at,advance=frames.at(-1).time-frames[0].time;
- check('Playback stays at 1x after doubling sample rate',Math.abs(advance-elapsed)<125&&await a.locator('[data-control=speed]').inputValue()==='1');
+ check('Playback stays at 1x after doubling sample rate',Math.abs(advance-elapsed)<125&&await choiceValue(a.locator('[data-control=speed]'))==='1');
  check('New intermediate native frames are displayed',frames.some((v,i)=>i&&v.time-frames[i-1].time===31.25));
  check('No unhandled browser errors',errors.length===0);
  const prefix=process.env.SITE_POSTER_URL?'published-':'';
