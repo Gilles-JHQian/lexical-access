@@ -3,9 +3,10 @@ import hashlib
 import json
 from pathlib import Path
 import zipfile
+from contrast_panels import CONTRAST_FILES
 
 ROOT = Path(__file__).resolve().parents[1]
-MEDIA_FILES = {'media/altitude.wav', 'media/aelkahhaazh.wav', 'media/poster-decoding.webp', 'media/poster-decoding.svg'}
+MEDIA_FILES = {'media/altitude.wav', 'media/aelkahhaazh.wav', 'media/poster-decoding.webp', 'media/poster-decoding.svg'} | CONTRAST_FILES
 
 
 def install_media(archive, output):

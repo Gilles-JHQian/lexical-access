@@ -1,7 +1,7 @@
 // Real stimulus playback, deferred poster media, readable mobile layout and zoom.
 const {chromium}=require('playwright');
 const fs=require('node:fs/promises'),path=require('node:path'),http=require('node:http'),assert=require('node:assert/strict'),crypto=require('node:crypto');
-const out=path.resolve(process.env.SITE_POSTER_OUTPUT||'../lexical_access_site_preview/story-media-v8');
+const out=path.resolve(process.env.SITE_POSTER_OUTPUT||'../lexical_access_site_preview/contrast-panels-v9');
 const root=path.resolve(process.env.SITE_POSTER_ROOT||path.join(out,'meta/review-site'));
 const checks=[],errors=[],check=(name,value)=>{assert.ok(value,name);checks.push(name);};
 let browser,server;
@@ -46,13 +46,17 @@ let browser,server;
  check('Decoding remains unloaded before section visit',!media.some(u=>u.includes('poster-decoding')));
  await page.setViewportSize({width:390,height:844});await page.locator('.chapter-nav a[href="#decoding"]').click();
  await page.locator('.decoding-figure img').scrollIntoViewIfNeeded();await page.waitForFunction(()=>document.querySelector('.decoding-figure img').naturalWidth===1800);
- check('Reading decoding downloads only the small preview',media.some(u=>u.endsWith('.webp'))&&!media.some(u=>u.endsWith('.svg')));
+ check('Reading decoding downloads only the small preview',media.some(u=>u.endsWith('.webp'))&&!media.some(u=>u.endsWith('/poster-decoding.svg')));
  await page.locator('.decoding-figure').screenshot({path:path.join(out,'figs',`${process.env.SITE_POSTER_URL?'published-':''}decoding-mobile.png`)});
  await page.locator('.decoding-figure .text-link').click();await page.waitForFunction(()=>document.querySelector('#decoding-dialog img').naturalWidth>1000);
  check('Enlarge loads the original SVG on demand',media.some(u=>u.endsWith('poster-decoding.svg'))&&await page.locator('#decoding-dialog').isVisible());
- check('Zoom dialog fits phone and scrolls the full figure',await page.locator('#decoding-dialog').evaluate(e=>e.getBoundingClientRect().right<=innerWidth)&&await page.locator('.figure-zoom').evaluate(e=>e.scrollWidth>e.clientWidth&&e.scrollHeight>e.clientHeight));
+ await page.screenshot({path:path.join(out,'figs',`${process.env.SITE_POSTER_URL?'published-':''}decoding-fitted.png`)});
+ check('Enlargement defaults to the whole figure',await page.locator('.figure-zoom').evaluate(e=>{const i=e.querySelector('img').getBoundingClientRect(),r=e.getBoundingClientRect();return i.width<=r.width&&i.height<=r.height&&e.scrollWidth<=e.clientWidth&&e.scrollHeight<=e.clientHeight;})&&await page.locator('#figure-zoom-value').textContent()==='100%');
+ await page.locator('#figure-zoom-range').fill('300');await page.locator('#figure-zoom-range').dispatchEvent('input');
+ check('Zooming in makes detailed panels scrollable',await page.locator('.figure-zoom').evaluate(e=>e.scrollWidth>e.clientWidth&&e.scrollHeight>e.clientHeight));
  await page.locator('.figure-zoom').evaluate(e=>{e.scrollLeft=500;e.scrollTop=900;});
  check('Lower and right-hand decoding panels reachable',await page.locator('.figure-zoom').evaluate(e=>e.scrollLeft>0&&e.scrollTop>0));
+ await page.locator('#figure-zoom-out').click();check('Zoom out reduces the figure',await page.locator('#figure-zoom-value').textContent()==='275%');await page.locator('#figure-fit').click();check('Fit restores the whole figure',await page.locator('.figure-zoom').evaluate(e=>e.scrollWidth<=e.clientWidth&&e.scrollHeight<=e.clientHeight));
  await page.keyboard.press('Escape');check('Escape closes enlargement',await page.locator('#decoding-dialog').isHidden());
  check('Focus returns to enlarge control',await page.locator('.decoding-figure .text-link').evaluate(e=>e===document.activeElement));
  const provenance=JSON.parse(await fs.readFile(path.join(out,'meta/story-media-provenance.json'),'utf8'));

@@ -7,7 +7,7 @@ p=argparse.ArgumentParser();p.add_argument('--output',type=Path,required=True);p
 r=Path(__file__).resolve().parents[1];m=a.output/'meta';site=m/'site';site.mkdir(exist_ok=True)
 report=json.loads((m/'export-validation.json').read_text());assert hashlib.sha256((m/'real-data.js').read_bytes()).hexdigest()==report['bundle_sha256']
 media_files=install_media(a.media,site)
-s=real_html(r)
+s=real_html(r,site)
 (site/'index.html').write_text(s)
 for name in ['styles.css','data-loader.js','surface-view.js','real-app.js','.nojekyll']:shutil.copyfile(r/name,site/name)
 shutil.copyfile(m/'real-data.js',site/'real-data.js');(site/'assets').mkdir(exist_ok=True)
@@ -18,6 +18,7 @@ standalone=standalone.replace('<link rel="icon" href="./assets/favicon.svg" type
 for asset in PUBLIC_ASSETS:
     if asset.endswith('.png'):standalone=standalone.replace('./'+asset,'data:image/png;base64,'+base64.b64encode((r/asset).read_bytes()).decode())
 for asset in media_files:
+    if asset.endswith('.json'):continue
     mime={'.wav':'audio/wav','.svg':'image/svg+xml','.webp':'image/webp'}[Path(asset).suffix]
     standalone=standalone.replace('./'+asset,'data:'+mime+';base64,'+base64.b64encode((site/asset).read_bytes()).decode())
 standalone=standalone.replace('</body>',''.join('<script>'+ (site/name).read_text()+'</script>' for name in ['real-data.js','data-loader.js','surface-view.js','real-app.js'])+'</body>')
