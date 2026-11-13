@@ -507,7 +507,7 @@ dialog { width:min(520px,90vw); border:1px solid var(--line); border-radius:6px;
 .figure-canvas { display:grid; place-items:center; }.figure-zoom .figure-canvas img { margin:0; max-width:none; display:block; background:#fff; }
 @media(max-width:900px){.contrast-static { padding-left:0; }}
 @media(max-width:620px){
- .poster-brains { gap:12px; }.poster-charts { grid-template-columns:1fr; gap:28px; }
+ .poster-brains,.poster-charts { gap:12px; }
  .poster-task-key { gap:16px; font-size:14px; }.static-options { gap:14px; }
  #decoding-dialog.figure-dialog[open] { padding:12px; }.figure-dialog-header h2 { font-size:18px; }
  .figure-zoom-tools { gap:6px; }.figure-zoom-tools #figure-fit { padding-inline:9px; }

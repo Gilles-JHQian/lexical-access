@@ -37,7 +37,7 @@ const checks=[],errors=[],check=(n,v)=>{assert.ok(v,n);checks.push(n);};let serv
   await page.setViewportSize({width,height:900});await page.locator('#contrast-results').scrollIntoViewIfNeeded();
   check('Static components fit '+width,await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
   check('Selectors are touch sized at '+width,await page.locator('.static-options button').evaluateAll(es=>es.every(e=>e.getBoundingClientRect().height>=44)));
-  if(width<620)check('Charts stack on phones at '+width,await page.locator('.contrast-result:not([hidden]) .poster-charts').evaluate(e=>getComputedStyle(e).gridTemplateColumns.split(' ').length===1));
+  check('Trace and pie share a row, left to right at '+width,await page.locator('.contrast-result:not([hidden]) .poster-charts figure').evaluateAll(es=>{const [trace,pie]=es.map(e=>e.getBoundingClientRect());return Math.abs(trace.top-pie.top)<1&&trace.right<=pie.left&&trace.width>0&&pie.width>0;}));
   await page.locator('#contrast-results').screenshot({style:'.skip-link:not(:focus),.developer-toggle{visibility:hidden}',path:path.join(out,'figs',`${prefix}contrast-static-${width}.png`)});
  }
  await page.setViewportSize({width:390,height:844});await page.locator('.contrast-result:not([hidden]) .poster-charts .figure-open').first().click();
