@@ -1,5 +1,9 @@
 # Changelog
 
+## Separate poster contrasts and fitted figure zoom · 2026-11-12
+
+Remove static mean traces/ROI selectors from the dynamic players and add an independent Contrast poster-results section. Stimulus/Offset and PW > W/W > PW select the original bilateral maps, d′ time courses with SEM and effect-weighted ROI pies. Reflow existing components for mobile screens and load only the viewed set. Figure enlargement now starts with the whole figure fitted, supports zoom out/in (25–400%), and resets with Fit. HGA data and card URLs are unchanged.
+
 ## Six-section story, stimuli and decoding figure · 2026-11-12
 
 Introduce lexical access and its significance before the research questions, add original Altitude / Aelkahhaazh audio, and explain all three task comparisons with a responsive cue-to-response diagram. Use the exact poster result titles; include its decoding figure with on-demand mobile enlargement; rename the conclusion Take home message. Remove public share/copy controls. Media ship as a separate pinned Release, loading only when played or viewed. Preserve HGA data, native 32 Hz playback, demand loading and fixed NFC URLs.

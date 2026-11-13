@@ -1,7 +1,7 @@
 // Demand boundaries, buffering, stale responses, retry, integrity and 32 Hz playback.
 const {chromium}=require('playwright');
 const fs=require('node:fs/promises'),path=require('node:path'),http=require('node:http'),assert=require('node:assert/strict');
-const out=path.resolve(process.env.SITE_POSTER_OUTPUT||'../lexical_access_site_preview/story-media-v8');
+const out=path.resolve(process.env.SITE_POSTER_OUTPUT||'../lexical_access_site_preview/contrast-panels-v9');
 const root=path.resolve(process.env.SITE_POSTER_ROOT||path.join(out,'meta/review-site'));
 let server,browser;const checks=[],errors=[];const check=(n,v)=>{assert.ok(v,n);checks.push(n);};
 (async()=>{

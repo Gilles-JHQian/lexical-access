@@ -134,33 +134,15 @@
       }
       if(state.playing)dataLoader.prefetch(cell(),state.hemi,state.index);
     }
-    function trace() {
-      const c = cell(), lo = c.times[0], hi = c.times.at(-1);
-      const values = bundle.tasks.flatMap(t => c.roiTraces[t.id][state.roi].mean).filter(v => v !== null);
-      let min = Math.min(0, ...values), max = Math.max(.01, ...values), pad = (max - min) * .12;
-      min -= pad; max += pad;
-      const x = t => 45 + (t - lo) / (hi - lo) * 815, y = v => 98 - (v - min) / (max - min) * 80;
-      const lines = bundle.tasks.map(t => {
-        const curve = c.roiTraces[t.id][state.roi];
-        if (!curve.n) return '';
-        return `<path d="${curve.mean.map((v,i) => `${i ? 'L' : 'M'}${x(c.times[i]).toFixed(2)} ${y(v).toFixed(2)}`).join(' ')}" fill="none" stroke="${t.color}" stroke-width="2.2" vector-effect="non-scaling-stroke"/>`;
-      }).join('');
-      control('trace').innerHTML = `<div class="trace-plot"><svg viewBox="0 0 900 130" preserveAspectRatio="none" role="img" aria-label="Mean ${metric} time course in ${bundle.roiLabels[state.roi]}"><line x1="45" x2="860" y1="${y(0)}" y2="${y(0)}" stroke="#bac4c9"/><line x1="${x(0)}" x2="${x(0)}" y1="15" y2="100" stroke="#bac4c9" stroke-dasharray="3 4"/>${lines}<line data-control="trace-cursor" x1="${x(c.times[state.index])}" x2="${x(c.times[state.index])}" y1="12" y2="101" stroke="#142d43"/></svg><span class="trace-axis-label trace-axis-upper" aria-hidden="true">${max.toFixed(2)}</span><span class="trace-axis-label trace-axis-lower" aria-hidden="true">${min.toFixed(2)}</span></div><p class="real-trace-caption">${metric === 'activation' ? 'HGA z-score' : 'Pseudoword − Word · ΔHGA z-score'}</p>`;
-    }
     function renderTime() {
       const c = cell(), t = c.times[state.index];
       control('time').value = state.index; control('time-output').textContent = ms(t);
       control('time').setAttribute('aria-valuetext', `${t} milliseconds from stimulus ${state.align}`);
-      const cursor = control('trace-cursor');
-      if (cursor) {
-        const x = 45 + (t - c.times[0]) / (c.times.at(-1) - c.times[0]) * 815;
-        cursor.setAttribute('x1', x); cursor.setAttribute('x2', x);
-      }
       renderMaps();
     }
     function render() {
       const c = cell(); state.index = Math.max(0, Math.min(c.times.length - 1, state.index));
-      for (const key of ['view','roi','hemi']) pressed(key, state[key]);
+      for (const key of ['view','hemi']) pressed(key, state[key]);
       control('alignment').value = state.align; control('scope').value = state.scope;
       if (control('direction')) control('direction').value = state.direction;
       control('settings-summary').textContent = `${state.hemi.toUpperCase()} · ${state.align}${metric === 'contrast' ? ' · ' + (state.direction === 'nwwd' ? 'PW > W' : 'W > PW') : ''}`;
@@ -171,9 +153,9 @@
       control('time-ticks').innerHTML = `<span>${ms(c.times[0])}</span><span class="zero-tick" style="left:${-c.times[0] / (c.times.at(-1) - c.times[0]) * 100}%">0</span><span>${ms(c.times.at(-1))}</span>`;
       control('signal-key').innerHTML = state.view === 'contours' ? `<span>Solid + · dashed − · pale task fill${state.scope !== 'none' && renderStyle.overlap !== 'none' ? (renderStyle.overlap === 'hatch' ? ' · hatching: spatial overlap' : ' · blue tint: spatial overlap') : ''}</span>` : `<span class="key-ramp contrast-ramp"></span><span>−${c.upper} ← 0 → +${c.upper} · ${metric === 'activation' ? 'HGA surface sum' : 'PW − W surface sum'}</span>`;
       control('selection-note').textContent = `Fixed selection window: ${c.selectionWindow.map(v => v.toFixed(2)).join(' to ')} s from stimulus ${state.align}.`;
-      control('counts-note').textContent = `${state.hemi.toUpperCase()} map contacts: ${bundle.tasks.map(t => `${t.label} ${c.counts[t.id][state.hemi]}`).join('; ')}. Bilateral curve contacts (${bundle.roiLabels[state.roi]}): ${bundle.tasks.map(t => `${t.label} ${c.roiTraces[t.id][state.roi].n || '0 (no data)'}`).join('; ')}.`;
-      control('kernel-note').textContent = `${c.kernel} spatial kernel. Contour level: ±${c.level}. Surface color depends on both amplitude and contact coverage. Curves are selection-conditioned, not an independent test of selection.`;
-      trace(); renderTime();
+      control('counts-note').textContent = `${state.hemi.toUpperCase()} map contacts: ${bundle.tasks.map(t => `${t.label} ${c.counts[t.id][state.hemi]}`).join('; ')}.`;
+      control('kernel-note').textContent = `${c.kernel} spatial kernel. Contour level: ±${c.level}. Surface color depends on both amplitude and contact coverage.`;
+      renderTime();
     }
     function pause() {
       state.playing = false; waitingIndex=null; requested=''; if (raf !== null) cancelAnimationFrame(raf); raf = null; last = null;
@@ -219,10 +201,10 @@
       setCamera(number('yaw', 0), number('pitch', 0)); state.index = nearest(number('t', 300)); render();
     }
     const controller = {metric, root, chapter, pause, restore, developerControls, refresh:render, hash:() => (metric === 'activation' ? 'hga?' : 'contrast?') + new URLSearchParams({view:state.view, align:state.align, direction:state.direction, hemi:state.hemi, scope:state.scope, roi:state.roi, t:String(cell().times[state.index]), yaw:camera.yaw.toFixed(1), pitch:camera.pitch.toFixed(1), fill:String(renderStyle.fillOpacity), line:String(renderStyle.lineWidth), brain:String(renderStyle.brightness), fold:String(renderStyle.curvature), overlap:renderStyle.overlap, smooth:String(renderStyle.smoothing)})};
-    control('roi-controls').insertAdjacentHTML('beforeend', Object.entries(bundle.roiLabels).map(([id,label]) => `<button type="button" data-roi="${id}" aria-pressed="${id === state.roi}">${label}</button>`).join(''));
+
     const settings = () => control('settings').open = !compact.matches;
     settings(); compact.addEventListener('change', settings);
-    for (const key of ['view','roi','hemi']) all(`[data-${key}]`).forEach(b => b.addEventListener('click', () => { pause(); state[key] = b.dataset[key]; render(); }));
+    for (const key of ['view','hemi']) all(`[data-${key}]`).forEach(b => b.addEventListener('click', () => { pause(); state[key] = b.dataset[key]; render(); }));
     control('alignment').addEventListener('change', e => { state.align = e.target.value; resetEvent(); });
     control('direction')?.addEventListener('change', e => { pause(); state.direction = e.target.value; render(); });
     control('scope').addEventListener('change', e => { state.scope = e.target.value; render(); });
@@ -341,13 +323,70 @@
     if (!event.currentTarget.open) examples.forEach(audio => audio.pause());
   });
   document.addEventListener('visibilitychange', () => { if (document.hidden) examples.forEach(audio => audio.pause()); });
-  const figureDialog = $('#decoding-dialog');
-  $$('.decoding-open').forEach(link => link.addEventListener('click', event => {
+  // Static poster components have their own controls and load only when visited.
+  const staticRoot = $('#contrast-results'), staticPanels = $$('.contrast-result');
+  let staticVisible = false;
+  function selectedPanel() { return staticPanels.find(p => p.dataset.staticPanel === `${$('#static-alignment').value}-${$('#static-direction').value}`); }
+  async function loadStaticPanel(panel, retry = false) {
+    if (!staticVisible || panel.dataset.loaded === 'true' || panel.dataset.loading === 'true') return;
+    panel.dataset.loading = 'true';
+    const status = panel.querySelector('.static-load-status'), button = status.querySelector('button');
+    status.hidden = false; status.querySelector('span').textContent = 'Loading poster figures…'; button.hidden = true;
+    try {
+      await Promise.all([...panel.querySelectorAll('img[data-src]')].map(async img => {
+        if (retry) img.removeAttribute('src');
+        if (!img.hasAttribute('src')) img.src = img.dataset.src;
+        await img.decode();
+      }));
+      panel.dataset.loaded = 'true'; status.hidden = true;
+    } catch {
+      status.querySelector('span').textContent = 'The poster figures could not load.'; button.hidden = false;
+    } finally { panel.dataset.loading = 'false'; }
+  }
+  function showStaticPanel() {
+    const selected = selectedPanel();
+    staticPanels.forEach(panel => panel.hidden = panel !== selected);
+    $('#static-selection').textContent = `${$('#static-alignment').selectedOptions[0].text}, ${$('#static-direction').selectedOptions[0].text}. ${selected.querySelector('.poster-window').textContent}`;
+    loadStaticPanel(selected);
+  }
+  for (const id of ['static-alignment','static-direction']) $('#'+id).addEventListener('change', showStaticPanel);
+  staticPanels.forEach(panel => panel.querySelector('[data-static-retry]').addEventListener('click', () => loadStaticPanel(panel, true)));
+  if ('IntersectionObserver' in window) new IntersectionObserver(entries => {
+    staticVisible = entries.at(-1).isIntersecting;
+    if (staticVisible) loadStaticPanel(selectedPanel());
+  }).observe(staticRoot); else staticVisible = true;
+  showStaticPanel();
+
+  // 100% means fit to the available viewport, including tall figures on laptops.
+  const figureDialog = $('#decoding-dialog'), figureViewport = figureDialog.querySelector('.figure-zoom');
+  const figureCanvas = figureDialog.querySelector('.figure-canvas'), figureImage = figureCanvas.querySelector('img');
+  let figureZoom = 100;
+  function resizeFigure(center = true) {
+    if (!figureDialog.open || !figureImage.naturalWidth) return;
+    const width = figureViewport.clientWidth, height = figureViewport.clientHeight;
+    const fit = Math.min((width-16)/figureImage.naturalWidth, (height-16)/figureImage.naturalHeight);
+    const imageWidth = figureImage.naturalWidth*fit*figureZoom/100, imageHeight = figureImage.naturalHeight*fit*figureZoom/100;
+    figureImage.style.width = imageWidth+'px'; figureImage.style.height = imageHeight+'px';
+    figureCanvas.style.width = Math.max(width,imageWidth)+'px'; figureCanvas.style.height = Math.max(height,imageHeight)+'px';
+    $('#figure-zoom-range').value = figureZoom; $('#figure-zoom-value').textContent = figureZoom+'%';
+    $('#figure-zoom-out').disabled = figureZoom <= 25; $('#figure-zoom-in').disabled = figureZoom >= 400;
+    if (center) {figureViewport.scrollLeft=(figureCanvas.offsetWidth-width)/2;figureViewport.scrollTop=(figureCanvas.offsetHeight-height)/2;}
+  }
+  function setFigureZoom(value) { figureZoom=Math.max(25,Math.min(400,value));resizeFigure(); }
+  $('#figure-zoom-out').addEventListener('click',()=>setFigureZoom(figureZoom-25));
+  $('#figure-zoom-in').addEventListener('click',()=>setFigureZoom(figureZoom+25));
+  $('#figure-fit').addEventListener('click',()=>setFigureZoom(100));
+  $('#figure-zoom-range').addEventListener('input',event=>setFigureZoom(Number(event.target.value)));
+  figureImage.addEventListener('load',()=>resizeFigure());
+  window.addEventListener('resize',()=>resizeFigure());
+  $$('.figure-open').forEach(link => link.addEventListener('click', event => {
     if (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey || !figureDialog.showModal) return;
     event.preventDefault();
-    const img = figureDialog.querySelector('img');
-    if (!img.hasAttribute('src')) img.src = img.dataset.src;
-    figureDialog.showModal();
+    $('#decoding-dialog-title').textContent = link.dataset.figureTitle || 'Poster figure';
+    figureImage.alt = link.querySelector('img')?.alt || link.dataset.figureTitle;
+    figureZoom = 100; figureImage.style.width='0px';figureImage.style.height='0px';
+    figureImage.src = link.href;
+    figureDialog.showModal(); resizeFigure();
   }));
   sync(); if (location.hash) requestAnimationFrame(applyHash);
 }());

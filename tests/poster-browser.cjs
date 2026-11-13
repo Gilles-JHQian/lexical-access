@@ -2,7 +2,7 @@
 const {chromium}=require('playwright');
 const assert=require('node:assert/strict'),fs=require('node:fs/promises'),path=require('node:path'),http=require('node:http');
 const config=require('../deployment.json');
-const output=path.resolve(process.env.SITE_POSTER_OUTPUT||path.join(__dirname,'../../lexical_access_site_preview/story-media-v8'));
+const output=path.resolve(process.env.SITE_POSTER_OUTPUT||path.join(__dirname,'../../lexical_access_site_preview/contrast-panels-v9'));
 const checks=[],errors=[]; const check=(name,value)=>{assert.ok(value,name);checks.push(name);};
 let browser,server;
 (async()=>{
@@ -13,7 +13,7 @@ let browser,server;
   const allowed=['index.html','real-app.js','surface-view.js','data-loader.js','styles.css','real-data.js','site-config.js','version.json','assets/favicon.svg','assets/cogan-lab.png','assets/duke-bme.png','hga/index.html','media/altitude.wav','media/aelkahhaazh.wav','media/poster-decoding.webp','media/poster-decoding.svg'];
   server=http.createServer(async(req,res)=>{
    let file=new URL(req.url,'http://localhost').pathname.replace(/^\/lexical-access\//,'');if(!file||file.endsWith('/'))file+='index.html';
-   if(!allowed.includes(file)&&!/^data\/[a-z0-9-]+\.bin\.gz$/.test(file)){res.writeHead(404).end();return;}
+   if(!allowed.includes(file)&&!/^media\/contrast-(?:stimulus|offset)-(?:nwwd|wdnw)-(?:lh|rh|trace|roi)\.(?:webp|svg)$/.test(file)&&!/^data\/[a-z0-9-]+\.bin\.gz$/.test(file)){res.writeHead(404).end();return;}
    try{const types={'.wav':'audio/wav','.webp':'image/webp','.gz':'application/gzip','.js':'text/javascript','.css':'text/css','.json':'application/json','.png':'image/png','.svg':'image/svg+xml','.html':'text/html'};res.setHeader('Content-Type',types[path.extname(file)]);res.end(await fs.readFile(path.join(root,file)));}catch{res.writeHead(404).end();}
   });
   await new Promise(r=>server.listen(0,'127.0.0.1',r));base=`http://127.0.0.1:${server.address().port}/lexical-access/`;
@@ -81,9 +81,8 @@ let browser,server;
  check('Contrast starts with its own three maps and lateral camera',await synced('contrast')&&(await camera('contrast'))[0]==='0:0');
  check('Contrast keeps independent onset support',await control('contrast','time').getAttribute('max')==='48'&&await control('contrast','alignment').inputValue()==='onset');
  await control('contrast','settings').locator('summary').click();await control('contrast','direction').selectOption('wdnw');await ready('contrast');
- check('Opposite effect selection retains PW minus W sign',(await explorer('contrast').locator('.real-trace-caption').textContent()).includes('Pseudoword − Word'));
- await explorer('contrast').locator('[data-roi=ventral]').click();
- check('Changing contrast ROI leaves activation ROI unchanged',await explorer('activation').locator('[data-roi=all]').getAttribute('aria-pressed')==='true');
+ check('Dynamic contrasts retain PW minus W sign',(await explorer('contrast').locator('.display-notes').textContent()).includes('signed pseudoword minus word'));
+ check('Dynamic sections contain no static traces or ROI selectors',await page.locator('[data-explorer] .trace,[data-explorer] .roi-controls').count()===0);
  await control('contrast','settings').locator('summary').click();await navigate('#hga');
  check('Returning preserves activation settings and camera',await control('activation','alignment').inputValue()==='offset'&&(await camera('activation'))[0]===angle);
  await control('activation','reset-view').click();await waitAngle('activation','0:0');

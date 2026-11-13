@@ -88,6 +88,7 @@
     <div class="chapter-body">
       <div class="result-intro"><p>Within the task-activated networks, we compare HGA between words and pseudowords and identify significant lexicality effects in either direction.</p></div>
       <!-- EXPLORER:contrast -->
+      <!-- CONTRAST:static -->
       <p class="section-bridge">These contrasts suggest two levels of lexical processing: one present without a required response, and another recruited by response demands but shared across output modalities.</p>
     </div>
   </details>
@@ -98,9 +99,9 @@
       <p>To test for shared lexical representations, we trained a linear classifier on HGA to distinguish words from pseudowords in one task, then tested it on the other tasks.</p>
       <div class="decode-flow" aria-label="Train a word–pseudoword classifier in one task and test it in another"><div>Train in one task<strong>Word or pseudoword?</strong></div><span class="flow-arrow" aria-hidden="true">→</span><div>Test in another task<strong>Does the distinction transfer?</strong></div></div>
       <figure class="decoding-figure">
-        <a class="decoding-open" href="./media/poster-decoding.svg" target="_blank" rel="noopener" aria-label="Open the full-size decoding figure"><img src="./media/poster-decoding.webp" width="1800" height="1878" loading="lazy" decoding="async" alt="Poster decoding results: rows show superior temporal, ventral temporal and prefrontal regions; columns test decision, repetition and passive listening. Red, blue and green contours denote the training task." aria-describedby="decoding-caption"></a>
+        <a class="decoding-open figure-open" data-figure-title="Cross-task decoding" href="./media/poster-decoding.svg" target="_blank" rel="noopener" aria-label="Open the full-size decoding figure"><img src="./media/poster-decoding.webp" width="1800" height="1878" loading="lazy" decoding="async" alt="Poster decoding results: rows show superior temporal, ventral temporal and prefrontal regions; columns test decision, repetition and passive listening. Red, blue and green contours denote the training task." aria-describedby="decoding-caption"></a>
         <figcaption id="decoding-caption"><strong>Cross-task temporal generalization.</strong> Each column fixes the test task; contour colors identify the training task. The horizontal and vertical axes show training and test time from stimulus onset. The diagonal marks equal train and test times.</figcaption>
-        <a class="text-link decoding-open" href="./media/poster-decoding.svg" target="_blank" rel="noopener">Enlarge the decoding figure ↗</a>
+        <a class="text-link decoding-open figure-open" data-figure-title="Cross-task decoding" href="./media/poster-decoding.svg" target="_blank" rel="noopener">Enlarge the decoding figure ↗</a>
       </figure>
       <p>The findings support two levels of shared lexical representations:</p>
       <div class="representation-results"><article><h3>STG / STS</h3><p>Representations are present even when no behavioral response is required.</p></article><article><h3>Ventral temporal and prefrontal regions</h3><p>Representations are recruited by response demands but shared across button-press and spoken responses.</p></article></div>
@@ -136,7 +137,12 @@
     <p class="developer-hint">Drag this window by its title. Hidden tools can be reopened with ?dev=1.</p>
   </div>
 </aside>
-<dialog id="decoding-dialog" aria-labelledby="decoding-dialog-title"><div class="figure-dialog-header"><h2 id="decoding-dialog-title">Cross-task decoding</h2><form method="dialog"><button type="submit" class="button secondary" autofocus>Close</button></form></div><p>Scroll across the figure to inspect the panels. Pinch to zoom on your phone.</p><div class="figure-zoom" tabindex="0" aria-label="Full decoding figure; scroll to inspect all panels"><img data-src="./media/poster-decoding.svg" width="1739" height="1814" alt="Full-size decoding figure with three brain regions and three test tasks."></div></dialog>
+<dialog id="decoding-dialog" class="figure-dialog" aria-labelledby="decoding-dialog-title">
+  <div class="figure-dialog-header"><h2 id="decoding-dialog-title">Cross-task decoding</h2><form method="dialog"><button type="submit" class="button secondary" autofocus>Close</button></form></div>
+  <div class="figure-zoom-tools"><button type="button" id="figure-zoom-out" aria-label="Zoom out">−</button><label class="sr-only" for="figure-zoom-range">Figure zoom</label><input id="figure-zoom-range" type="range" min="25" max="400" step="25" value="100"><output id="figure-zoom-value" for="figure-zoom-range">100%</output><button type="button" id="figure-zoom-in" aria-label="Zoom in">+</button><button type="button" id="figure-fit">Fit</button></div>
+  <p>100% fits the whole figure. Use − / + to resize; scroll to inspect details.</p>
+  <div class="figure-zoom" tabindex="0" aria-label="Figure viewport"><div class="figure-canvas"><img alt="Enlarged scientific figure"></div></div>
+</dialog>
 <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 <dialog id="share-dialog"><form method="dialog"><h2>Tuned view link</h2><p>Copy this address to open the selected view.</p><label for="share-url">Link</label><input id="share-url" readonly><button class="button primary" value="close">Done</button></form></dialog>
 </body>

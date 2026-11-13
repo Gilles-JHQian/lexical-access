@@ -29,7 +29,7 @@ def build(bundle, output, media):
     output.mkdir(parents=True, exist_ok=True)
     media_files = install_media(media, output)
     manifest, data_files = write_stream_assets(data, output)
-    html = real_html(ROOT)
+    html = real_html(ROOT, output)
     html = html.replace('data-developer-tools="true"', 'data-developer-tools="' + str(config.get("developer_tools", False)).lower() + '"')
     # Stable entrances, immutable asset identities: avoid mixing cached old/new code.
     for name in ['styles.css', 'data-loader.js', 'surface-view.js', 'real-app.js', 'real-data.js']:
