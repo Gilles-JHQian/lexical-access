@@ -512,3 +512,8 @@ dialog { width:min(520px,90vw); border:1px solid var(--line); border-radius:6px;
  #decoding-dialog.figure-dialog[open] { padding:12px; }.figure-dialog-header h2 { font-size:18px; }
  .figure-zoom-tools { gap:6px; }.figure-zoom-tools #figure-fit { padding-inline:9px; }
 }
+
+/* Temporal signal comparisons live in the existing developer panel. */
+.signal-options { display:grid; gap:6px; justify-content:stretch; margin-bottom:16px; }
+.signal-options select { width:100%; min-width:0; }
+.processing-status { margin:8px 0 12px; color:var(--muted); font-size:14px; }

@@ -13,7 +13,8 @@
     "test:contours": "node tests/contour-parity.cjs",
     "test:loading": "node tests/lazy-browser.cjs",
     "test:story": "node tests/story-media-browser.cjs",
-    "test:static": "node tests/contrast-panels-browser.cjs"
+    "test:static": "node tests/contrast-panels-browser.cjs",
+    "test:temporal": "node tests/contrast-temporal-browser.cjs"
   },
   "devDependencies": {
     "playwright": "1.65.0"

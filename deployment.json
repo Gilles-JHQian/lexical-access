@@ -1,9 +1,9 @@
 {
   "repository": "Gilles-JHQian/lexical-access",
   "base_url": "https://gilles-jhqian.github.io/lexical-access/",
-  "data_release": "hga-native-32hz-v4-2026-11-12",
+  "data_release": "hga-contrast-temporal-v5-2026-11-12",
   "data_asset": "real-data.js",
-  "data_sha256": "42dace27c539a2fce899e4298e7d5bc2c2d31a4060a59a704bafa89f5af23000",
+  "data_sha256": "02c114e8ccd01f4366599e4f85e85a9b7f4e43d7be2475c7e9f476548bf6a05f",
   "developer_tools": true,
   "media_release": "poster-web-typography-v3-2026-11-12",
   "media_asset": "story-media.zip",
