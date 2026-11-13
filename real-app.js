@@ -9,7 +9,7 @@
   const controllers = [];
   const renderStyle = {...window.LexicalSurfaceView.defaults};
   let developerPanel = null;
-  const defaults = {view:'tasks', align:'onset', direction:'nwwd', hemi:'lh', scope:'all', roi:'all', index:18, speed:1};
+  const defaults = {view:'tasks', align:'onset', direction:'nwwd', hemi:'lh', scope:'all', roi:'all', processing:'original', index:18, speed:1};
   const ms = t => `${t > 0 ? '+' : t < 0 ? '−' : ''}${Math.abs(Math.round(t))} ms`;
 
   async function share(kind, controller) {
@@ -36,7 +36,7 @@
     const control = name => root.querySelector(`[data-control="${name}"]`) || developerControls.querySelector(`[data-control="${name}"]`);
     const all = selector => [...new Set([...root.querySelectorAll(selector), ...developerControls.querySelectorAll(selector)])];
     const state = {...defaults, playing:false}, camera = {yaw:0, pitch:0};
-    const cell = () => bundle.cells[metric === 'activation' ? `activation-${state.align}` : `contrast-${state.align}-${state.direction}`];
+    const cell = () => bundle.cells[metric === 'activation' ? `activation-${state.align}` : `contrast-${state.align}-${state.direction}${state.processing==='original'?'':'-'+state.processing}`];
     let surfaces = [], geometryKey = '', visible = false, raf = null, last = null, cameraRaf = null;
     let requested = '', failed = '', waitingIndex = null;
     const pressed = (key, value) => all(`[data-${key}]`).forEach(b => b.setAttribute('aria-pressed', String(b.dataset[key] === value)));
@@ -101,7 +101,7 @@
       control('brain-stage').setAttribute('aria-busy',String(Boolean(message)));
     }
     function needFrame(index) {
-      const c=cell(),hemi=state.hemi,key=`${c.metric}:${c.align}:${c.direction}:${hemi}:${index}`;
+      const c=cell(),hemi=state.hemi,key=`${c.metric}:${c.align}:${c.direction}:${state.processing}:${hemi}:${index}`;
       if(failed===key||requested===key)return;
       requested=key;failed='';loading('Loading this view…');
       dataLoader.ensure(c,hemi,index).then(()=>{
@@ -131,6 +131,7 @@
         item.view.canvas.dataset.time=String(cell().times[state.index]);
         item.view.canvas.dataset.cell=cell().id||`${metric}-${state.align}`;
         item.view.canvas.dataset.hemi=state.hemi;
+        item.view.canvas.dataset.processing=metric==='contrast'?state.processing:'original';
       }
       if(state.playing)dataLoader.prefetch(cell(),state.hemi,state.index);
     }
@@ -138,6 +139,12 @@
       const c = cell(), t = c.times[state.index];
       control('time').value = state.index; control('time-output').textContent = ms(t);
       control('time').setAttribute('aria-valuetext', `${t} milliseconds from stimulus ${state.align}`);
+      const status=control('processing-status');
+      if(status){
+        status.hidden=state.processing==='original';
+        const outside=c.inferenceWindow&&(t<c.inferenceWindow[0]*1000||t>c.inferenceWindow[1]*1000);
+        status.textContent=(c.processingLabel||'')+(outside?' · Outside the tested window':'');
+      }
       renderMaps();
     }
     function render() {
@@ -145,6 +152,7 @@
       for (const key of ['view','hemi']) pressed(key, state[key]);
       control('alignment').value = state.align; control('scope').value = state.scope;
       if (control('direction')) control('direction').value = state.direction;
+      if (control('processing')) control('processing').value = state.processing;
       control('settings-summary').textContent = `${state.hemi.toUpperCase()} · ${state.align}${metric === 'contrast' ? ' · ' + (state.direction === 'nwwd' ? 'PW > W' : 'W > PW') : ''}`;
       control('overlay-options').hidden = state.view !== 'contours';
       control('time').max = c.times.length - 1; control('speed').value = state.speed;
@@ -153,7 +161,7 @@
       control('time-ticks').innerHTML = `<span>${ms(c.times[0])}</span><span class="zero-tick" style="left:${-c.times[0] / (c.times.at(-1) - c.times[0]) * 100}%">0</span><span>${ms(c.times.at(-1))}</span>`;
       control('signal-key').innerHTML = state.view === 'contours' ? `<span>Solid + · dashed − · pale task fill${state.scope !== 'none' && renderStyle.overlap !== 'none' ? (renderStyle.overlap === 'hatch' ? ' · hatching: spatial overlap' : ' · blue tint: spatial overlap') : ''}</span>` : `<span class="key-ramp contrast-ramp"></span><span>−${c.upper} ← 0 → +${c.upper} · ${metric === 'activation' ? 'HGA surface sum' : 'PW − W surface sum'}</span>`;
       control('selection-note').textContent = `Fixed selection window: ${c.selectionWindow.map(v => v.toFixed(2)).join(' to ')} s from stimulus ${state.align}.`;
-      control('counts-note').textContent = `${state.hemi.toUpperCase()} map contacts: ${bundle.tasks.map(t => `${t.label} ${c.counts[t.id][state.hemi]}`).join('; ')}.`;
+      control('counts-note').textContent = `${state.hemi.toUpperCase()} source pool: ${bundle.tasks.map(t => `${t.label} ${c.counts[t.id][state.hemi]}`).join('; ')}.${state.processing==='cluster'?' Only samples inside the directional SDR1 significant clusters contribute.':''}`;
       control('kernel-note').textContent = `${c.kernel} spatial kernel. Contour level: ±${c.level}. Surface color depends on both amplitude and contact coverage.`;
       renderTime();
     }
@@ -192,7 +200,7 @@
     function resetEvent() { pause(); state.index = nearest(0); render(); }
     function restore(params) {
       pause(); Object.assign(state, defaults); camera.yaw = 0; camera.pitch = 0;
-      const allowed = {view:['tasks','contours'], align:['onset','offset'], direction:['nwwd','wdnw'], hemi:['lh','rh'], scope:['all','active','none'], roi:Object.keys(bundle.roiLabels)};
+      const allowed = {view:['tasks','contours'], align:['onset','offset'], direction:['nwwd','wdnw'], hemi:['lh','rh'], scope:['all','active','none'], processing:metric==='contrast'?['original','smooth','cluster']:['original'], roi:Object.keys(bundle.roiLabels)};
       for (const [key, choices] of Object.entries(allowed)) if (choices.includes(params.get(key))) state[key] = params.get(key);
       const number = (key, fallback) => params.has(key) && Number.isFinite(Number(params.get(key))) ? Number(params.get(key)) : fallback;
       for(const [param,key,lo,hi] of [['fill','fillOpacity',0,.45],['line','lineWidth',.75,3],['brain','brightness',.8,1],['fold','curvature',.03,.25],['smooth','smoothing',0,1.5]])if(params.has(param))renderStyle[key]=Math.max(lo,Math.min(hi,number(param,renderStyle[key])));
@@ -200,13 +208,14 @@
       developerPanel?.syncAppearance();controllers.filter(c=>c.metric!==metric).forEach(c=>c.refresh());
       setCamera(number('yaw', 0), number('pitch', 0)); state.index = nearest(number('t', 300)); render();
     }
-    const controller = {metric, root, chapter, pause, restore, developerControls, refresh:render, hash:() => (metric === 'activation' ? 'hga?' : 'contrast?') + new URLSearchParams({view:state.view, align:state.align, direction:state.direction, hemi:state.hemi, scope:state.scope, roi:state.roi, t:String(cell().times[state.index]), yaw:camera.yaw.toFixed(1), pitch:camera.pitch.toFixed(1), fill:String(renderStyle.fillOpacity), line:String(renderStyle.lineWidth), brain:String(renderStyle.brightness), fold:String(renderStyle.curvature), overlap:renderStyle.overlap, smooth:String(renderStyle.smoothing)})};
+    const controller = {metric, root, chapter, pause, restore, developerControls, refresh:render, hash:() => (metric === 'activation' ? 'hga?' : 'contrast?') + new URLSearchParams({view:state.view, align:state.align, direction:state.direction, hemi:state.hemi, scope:state.scope, roi:state.roi, ...(metric==='contrast'?{processing:state.processing}:{}), t:String(cell().times[state.index]), yaw:camera.yaw.toFixed(1), pitch:camera.pitch.toFixed(1), fill:String(renderStyle.fillOpacity), line:String(renderStyle.lineWidth), brain:String(renderStyle.brightness), fold:String(renderStyle.curvature), overlap:renderStyle.overlap, smooth:String(renderStyle.smoothing)})};
 
     const settings = () => control('settings').open = !compact.matches;
     settings(); compact.addEventListener('change', settings);
     for (const key of ['view','hemi']) all(`[data-${key}]`).forEach(b => b.addEventListener('click', () => { pause(); state[key] = b.dataset[key]; render(); }));
     control('alignment').addEventListener('change', e => { state.align = e.target.value; resetEvent(); });
     control('direction')?.addEventListener('change', e => { pause(); state.direction = e.target.value; render(); });
+    control('processing')?.addEventListener('change', e => { pause(); state.processing=e.target.value; render(); });
     control('scope').addEventListener('change', e => { state.scope = e.target.value; render(); });
     control('time').addEventListener('input', e => { pause(); state.index = Number(e.target.value); renderTime(); });
     control('retry').addEventListener('click',()=>{failed='';requested='';renderMaps();});
@@ -232,7 +241,7 @@
     const panel=$('#developer-panel'),toggle=$('#developer-toggle'),target=$('#developer-target');
     let active=controllers[0];
     for(const c of controllers){$('#developer-groups').append(c.developerControls);c.developerControls.dataset.owner=c.metric;}
-    const ranges=[['brightness','Brain lightness',.8,1,.01],['curvature','Sulcal contrast',.03,.25,.01],['fillOpacity','Contour fill',0,.45,.01],['lineWidth','Contour width',.75,3,.05],['smoothing','Contour smoothing',0,1.5,.1]];
+    const ranges=[['brightness','Brain lightness',.8,1,.01],['curvature','Sulcal contrast',.03,.25,.01],['fillOpacity','Contour fill',0,.45,.01],['lineWidth','Contour width',.75,3,.05],['smoothing','Contour line smoothing',0,1.5,.1]];
     $('#developer-appearance').innerHTML=ranges.map(([key,label,min,max,step])=>`<label class="developer-range">${label}<output data-style-output="${key}"></output><input type="range" data-style="${key}" aria-label="${label}" min="${min}" max="${max}" step="${step}" value="${renderStyle[key]}"></label>`).join('')+'<label class="developer-select">Overlap style<select data-style="overlap"><option value="hatch">Fine hatching</option><option value="tint">Soft blue tint</option><option value="none">Hidden</option></select></label>';
     function syncAppearance(){
       for(const [key] of ranges){$(`[data-style="${key}"]`).value=renderStyle[key];$(`[data-style-output="${key}"]`).textContent=key==='lineWidth'?`${renderStyle[key].toFixed(2)} px`:key==='smoothing'?`${renderStyle[key].toFixed(1)} mm`:`${Math.round(renderStyle[key]*100)}%`;}
