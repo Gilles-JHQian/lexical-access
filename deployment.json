@@ -4,7 +4,7 @@
   "data_release": "hga-native-64hz-v6-2026-11-12",
   "data_asset": "real-data.js",
   "data_sha256": "43561415d614c38ed408f361b40bc8443c369ac74978fc92d8cc3ebff33b1230",
-  "developer_tools": true,
+  "developer_tools": false,
   "media_release": "poster-web-typography-v3-2026-11-12",
   "media_asset": "story-media.zip",
   "media_sha256": "071b53f59a236331ce5e1da7239c3a5391e790d9d77d33ec999bbed6050c6ec7"
