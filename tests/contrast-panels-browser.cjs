@@ -8,7 +8,7 @@ const checks=[],errors=[],check=(n,v)=>{assert.ok(v,n);checks.push(n);};let serv
 (async()=>{
  let base=process.env.SITE_POSTER_URL;
  if(!base){server=http.createServer(async(req,res)=>{const rel=new URL(req.url,'http://localhost').pathname.replace(/^\/lexical-access\//,'')||'index.html';if(rel.includes('..')||!/^[-a-zA-Z0-9_./]+$/.test(rel)){res.writeHead(404).end();return;}try{const types={'.js':'text/javascript','.css':'text/css','.html':'text/html','.png':'image/png','.webp':'image/webp','.svg':'image/svg+xml','.wav':'audio/wav','.gz':'application/gzip'};res.setHeader('Content-Type',types[path.extname(rel)]||'application/octet-stream');res.end(await fs.readFile(path.join(root,rel)));}catch{res.writeHead(404).end();}});await new Promise(r=>server.listen(0,'127.0.0.1',r));base=`http://127.0.0.1:${server.address().port}/lexical-access/`;}
- browser=await chromium.launch({args:['--enable-unsafe-swiftshader']});const context=await browser.newContext({viewport:{width:390,height:844},hasTouch:true,reducedMotion:'reduce'}),page=await context.newPage(),requests=[];
+ browser=await chromium.launch({args:['--enable-unsafe-swiftshader']});const context=await browser.newContext({viewport:{width:390,height:844},hasTouch:true,reducedMotion:'reduce',colorScheme:process.env.SITE_COLOR_SCHEME||'light'}),page=await context.newPage(),requests=[];
  page.on('pageerror',e=>errors.push(e.message));page.on('request',r=>{if(r.url().includes('/media/'))requests.push(r.url());});
  await page.goto(base+'#hga');await page.waitForSelector('#activation-explorer canvas[data-camera]');await page.waitForTimeout(300);
  check('NFC entrance requests no static media',requests.length===0);

@@ -7,6 +7,7 @@
   <meta name="description" content="Neural Dynamics of Lexical Access Across Response Demands. Explore shared and task-dependent responses during listening, lexical decision and repetition.">
   <title>Neural Dynamics of Lexical Access Across Response Demands · Cogan Lab</title>
   <link rel="icon" href="./assets/favicon.svg" type="image/svg+xml">
+  <!-- THEME:script -->
   <link rel="stylesheet" href="./styles.css">
   <script defer src="./real-data.js"></script>
   <script defer src="./data-loader.js"></script>
@@ -20,7 +21,15 @@
     <a class="wordmark" href="#top" aria-label="Cogan Lab, back to top"><span class="cogan-logo"><img src="./assets/cogan-lab.png" width="1533" height="274" alt="Cogan Lab" fetchpriority="high"></span></a>
     <a class="department-mark" href="https://bme.duke.edu/" aria-label="Duke Biomedical Engineering"><img src="./assets/duke-bme.png" width="2560" height="349" alt="Duke Biomedical Engineering"></a>
   </div>
-  <nav aria-label="Primary"><a href="#question">The story</a><a class="nav-explore" href="#hga">Explore HGA <span aria-hidden="true">↗</span></a></nav>
+  <div class="header-actions">
+    <nav aria-label="Primary"><a href="#question">The story</a><a class="nav-explore" href="#hga">Explore HGA <span aria-hidden="true">↗</span></a></nav>
+    <fieldset class="theme-switch" hidden>
+      <legend class="sr-only">Color theme</legend>
+      <button type="button" data-theme-choice="system" aria-pressed="true">System</button>
+      <button type="button" data-theme-choice="light" aria-pressed="false">Light</button>
+      <button type="button" data-theme-choice="dark" aria-pressed="false">Dark</button>
+    </fieldset>
+  </div>
 </header>
 <main id="main">
 <section class="hero wrap" id="top">
