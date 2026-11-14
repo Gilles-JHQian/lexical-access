@@ -40,6 +40,9 @@ def explorer_html(metric):
 
 def real_html(root, media_root):
     text = (root / 'poster.html').read_text()
+    # Apply the saved/system palette before first paint without another request.
+    assert text.count('<!-- THEME:script -->') == 1
+    text = text.replace('<!-- THEME:script -->', '<script>' + (root / 'theme.js').read_text() + '</script>')
     for metric in ('activation', 'contrast'):
         marker = f'<!-- EXPLORER:{metric} -->'
         assert text.count(marker) == 1
